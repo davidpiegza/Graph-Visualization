@@ -44,7 +44,7 @@ A node has the properties
   - `position`, Object for x, y, z position, default is {}
   - `data`, Object with further properties, e.g. properties for a graph layout
 
-For more details have a look at the source code.
+For more details have a look at the [source code](https://github.com/davidpiegza/Graph-Visualization/blob/master/graph-visualization/Graph.js).
 
 ### Graph Layout ###
 
@@ -67,4 +67,4 @@ The graph layout gets the created graph and calculates new positions for the nod
 
 The graph layout may extend the nodes and edges with custom properties in the data object.
 
-See force-based-layout.js for example usage.
+See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/blob/master/graph-visualization/layouts/force-based-layout.js) for example usage.
