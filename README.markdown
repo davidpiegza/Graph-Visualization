@@ -11,6 +11,7 @@ This project uses Three.js for drawing and currently supports a force directed l
 1. Clone or download the project
 2. Open the index_sample.html in a WebGL-compatible browser
 
+You may copy the index_sample.html to index.html and customize it.
 
 Project Description
 -------------------
