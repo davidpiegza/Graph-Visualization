@@ -4,6 +4,7 @@ function Graph(options) {
   this.nodeSet = {};
   this.nodes = [];
   this.edges = [];
+  this.layout;
 }
 
 Graph.prototype.addNode = function(node) {

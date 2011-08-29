@@ -10,6 +10,8 @@ var graph = new Graph();
 var graph_layout;
 
 
+
+
 function init() {
   // Three.js initialization
   camera = new THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 1000000 );
@@ -30,6 +32,8 @@ function init() {
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.top = '0px';
   document.body.appendChild( stats.domElement );
+  
+  info = document.getElementById("info");
 }
 
 
@@ -45,7 +49,7 @@ function createGraph() {
   do {
     var node = nodes.shift();
 
-    var numEdges = randomFromTo(1, 10);
+    var numEdges = 3; // randomFromTo(1, 10);
     for(var i=1; i <= numEdges; i++) {
       var target_node = new Node(i*steps);
       if(graph.addNode(target_node)) {
@@ -59,15 +63,30 @@ function createGraph() {
     steps++;
   } while(nodes.length != 0 && steps < 50);
   
-  graph_layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 100000});
-  graph_layout.init();
+  graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 90000});
+  graph.layout.init();
 }
 
 
-function drawNode(node) {
-  var geometry = new THREE.CubeGeometry( 100, 100, 0 );
 
-  var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.5 } ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, wireframe: true } ) ] );
+function drawNode(node) {
+
+  var geometry = new THREE.CubeGeometry( 100, 100, 0 );
+  var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, wireframe: true } ) ] );
+
+  // label
+  var labelCanvas = document.createElement( "canvas" );
+  var xc = labelCanvas.getContext("2d");
+  labelCanvas.width = labelCanvas.height = 128;
+  // xc.shadowColor = "#000";
+  // xc.shadowBlur = 7;
+  // xc.fillStyle = "orange";
+  xc.font = "50pt arial bold";
+  xc.fillText("myText", 10, 64);
+
+  var xm = new THREE.MeshBasicMaterial( { map: new THREE.Texture( labelCanvas ), transparent: true } );
+  xm.map.needsUpdate = true;
+
 
   var area = 2000;
   if(node.id == 0) {
@@ -78,11 +97,23 @@ function drawNode(node) {
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
   }
 
+  var mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), xm );
+  mesh.position.x = draw_object.position.x;
+  mesh.position.y = draw_object.position.y;
+  mesh.doubleSided = true;
+  mesh.draw_object = draw_object;
+  mesh.updateMatrix();
+  mesh.type = "label";
+  scene.addObject(mesh);
+
+
   draw_object.id = node.id;
   node.data.draw_object = draw_object;
   node.position = draw_object.position;
   scene.addObject( node.data.draw_object );
 }
+
+
 
 
 function drawEdge(source, target) {
@@ -106,12 +137,38 @@ function animate() {
 
 
 function render() {
-  graph_layout.generate();
+  graph.layout.generate();
+  
+  scene.objects.forEach(function(obj) {
+    if(obj.type === "label") {
+      var delta_x = obj.position.x - obj.draw_object.position.x;
+      var delta_y = obj.position.y - obj.draw_object.position.y;
+      if(Math.sqrt(delta_x*delta_x) > 300) {
+        obj.position.x = obj.draw_object.position.x;
+      }
+      if(Math.sqrt(delta_y*delta_y) > 300) {
+        obj.position.y = obj.draw_object.position.y;
+      }
+      drawText(obj, obj.draw_object.position.y);
+    }
+  });
+  
   renderer.render( scene, camera );
   interaction.update();
   stats.update();
 }
 
+
+function drawText(draw_object, text) {
+  draw_object.materials[0].map.image = null;
+  var textCanvas = document.createElement( "canvas" );
+  var xc = textCanvas.getContext("2d");
+  // xc.shadowColor = "#000";
+  // xc.shadowBlur = 7;
+  xc.font = "50pt arial bold";
+  xc.fillText(text, 10, 64);
+  draw_object.materials[0].map.image = textCanvas;
+}
 
 function randomFromTo(from, to) {
   return Math.floor(Math.random() * (to - from + 1) + from);
