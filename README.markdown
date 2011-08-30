@@ -68,4 +68,4 @@ The graph layout gets the created graph and calculates new positions for the nod
 
 The graph layout may extend the nodes and edges with custom properties in the data object.
 
-See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/layouts/force-based-layout.js) for example usage.
+See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-based-layout.js) for example usage.
