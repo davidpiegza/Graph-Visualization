@@ -45,7 +45,7 @@ A node has the properties
   - `position`, Object for x, y, z position, default is {}
   - `data`, Object with further properties, e.g. properties for a graph layout
 
-For more details have a look at the [source code](https://github.com/davidpiegza/Graph-Visualization/Graph.js).
+For more details have a look at the [source code](https://github.com/davidpiegza/Graph-Visualization/blob/master/Graph.js).
 
 ### Graph Layout ###
 
