@@ -99,16 +99,16 @@ Layout.ForceDirected = function(graph, options) {
   var calcPositions = function(graph, node) {
     var delta_length = Math.max(EPSILON, norm(node));
   
-    var new_disp_x = (node.layout.offset_x / delta_length) * Math.min(100, temperature);
-    var new_disp_y = (node.layout.offset_y / delta_length) * Math.min(100, temperature);
-
-    var c = 50;
+    node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
+    node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
     
-    node.layout.tmp_pos_x += Math.max(-c, Math.min(c,new_disp_x));
-    node.layout.tmp_pos_y += Math.max(-c, Math.min(c,new_disp_y));
-    
-    node.position.x = node.layout.tmp_pos_x;
-    node.position.y = node.layout.tmp_pos_y;
+    var c = 100;
+    if(node.position.x < (node.layout.tmp_pos_x - c) || node.position.x > (node.layout.tmp_pos_x + c)) {
+      node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
+    }
+    if(node.position.y < (node.layout.tmp_pos_y - c) || node.position.y > (node.layout.tmp_pos_y + c)) {
+      node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
+    }
   };
 
   var norm = function(node) {
