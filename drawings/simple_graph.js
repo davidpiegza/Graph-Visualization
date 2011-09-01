@@ -14,16 +14,41 @@ var graph_layout;
 
 function init() {
   // Three.js initialization
-  camera = new THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 1000000 );
+  // camera = new THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 1000000 );
+  
+  camera = new THREE.TrackballCamera({
+
+  					fov: 40, 
+  					aspect: window.innerWidth / window.innerHeight,
+  					near: 1,
+  					far: 1000000, //1e3,
+
+  					rotateSpeed: 1.0,
+  					zoomSpeed: 1.2,
+  					panSpeed: 0.8,
+
+  					noZoom: false,
+  					noPan: false,
+
+  					staticMoving: false,
+  					dynamicDampingFactor: 0.3,
+
+  					keys: [ 65, 83, 68 ]
+
+  				});
+
+  
+  
+  
   camera.position.z = 5000;
-  camera.useTarget = false;
+  // camera.useTarget = false;
 
   scene = new THREE.Scene();
 
   renderer = new THREE.CanvasRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
 
-  interaction = new THREEJS.Interaction(camera);
+  // interaction = new THREEJS.Interaction(camera);
 
   document.body.appendChild( renderer.domElement );
   
@@ -71,7 +96,7 @@ function createGraph() {
 
 function drawNode(node) {
 
-  var geometry = new THREE.CubeGeometry( 100, 100, 0 );
+  var geometry = new THREE.CubeGeometry( 100, 100, 100 );
   var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, wireframe: true } ) ] );
 
   // label
@@ -154,7 +179,7 @@ function render() {
   });
   
   renderer.render( scene, camera );
-  interaction.update();
+  // interaction.update();
   stats.update();
 }
 
