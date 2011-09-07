@@ -7,6 +7,9 @@ Drawing.SimpleGraph = function(options) {
 
   var camera, scene, renderer, interaction, stats;
   var graph = new Graph({limit: options.limit});
+  
+  var geometries = [];
+  var info;
 
   init();
   createGraph();
@@ -36,7 +39,8 @@ Drawing.SimpleGraph = function(options) {
 
     scene = new THREE.Scene();
 
-    renderer = new THREE.CanvasRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: true});
+
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     document.body.appendChild( renderer.domElement );
@@ -46,8 +50,13 @@ Drawing.SimpleGraph = function(options) {
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.top = '0px';
     document.body.appendChild( stats.domElement );
-  
-    // info = document.getElementById("info");
+
+    info = document.createElement("div");
+    info.style.position = 'absolute';
+    info.style.top = '100px';
+    
+    document.body.appendChild( stats.domElement );
+    document.body.appendChild( info );
   }
 
 
@@ -75,12 +84,12 @@ Drawing.SimpleGraph = function(options) {
         }
       }
       steps++;
-    } while(nodes.length != 0 && steps < 150);
+    } while(nodes.length != 0 && steps < 10);
   
     if(layout === "3d") {
-      graph.layout = new Layout.ForceDirected3D(graph, {width: 2000, height: 2000, iterations: 2000});
+      graph.layout = new Layout.ForceDirected3D(graph, {width: 2000, height: 2000, iterations: 1000});
     } else {
-      graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 2000});
+      graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000});
     }
     graph.layout.init();
   }
@@ -135,7 +144,7 @@ Drawing.SimpleGraph = function(options) {
 
   function drawEdge(source, target) {
       material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 1, linewidth: 0.5 } );
-      tmp_geo = new THREE.Geometry();
+      var tmp_geo = new THREE.Geometry();
     
       tmp_geo.vertices.push(new THREE.Vertex(source.data.draw_object.position));
       tmp_geo.vertices.push(new THREE.Vertex(target.data.draw_object.position));
@@ -143,6 +152,9 @@ Drawing.SimpleGraph = function(options) {
       line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
       line.scale.x = line.scale.y = line.scale.z = 1;
       line.originalScale = 1;
+      
+      geometries.push(tmp_geo);
+      
       scene.addObject( line );
   }
 
@@ -154,8 +166,16 @@ Drawing.SimpleGraph = function(options) {
 
 
   function render() {
-    graph.layout.generate();
-  
+    if(graph.layout.generate()) {
+      info.style.border = '10px solid red';
+    } else {
+      info.style.border = 'none';
+    }
+
+    for(var i=0; i<geometries.length; i++) {
+      geometries[i].__dirtyVertices = true;
+    }
+    
     // scene.objects.forEach(function(obj) {
     //   if(obj.type === "label") {
     //     var delta_x = obj.position.x - obj.draw_object.position.x;
