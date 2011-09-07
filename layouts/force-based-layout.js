@@ -43,7 +43,10 @@ Layout.ForceDirected = function(graph, options) {
 
       temperature *= (1.0 - (layout_iterations / max_iterations));
       layout_iterations++;
+    } else {
+      return false;
     }
+    return true;
   };
 
   var calcRepulsion = function(graph, node_v) {
