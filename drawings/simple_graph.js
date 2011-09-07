@@ -4,6 +4,8 @@ var Drawing = Drawing || {};
 Drawing.SimpleGraph = function(options) {
   var options = options || {};
   var layout = options.layout || "2d";
+  var nodes_count = options.nodes || 20;
+  var edges_count = options.edges || 10;
 
   var camera, scene, renderer, interaction, stats;
   var graph = new Graph({limit: options.limit});
@@ -72,7 +74,7 @@ Drawing.SimpleGraph = function(options) {
     do {
       var node = nodes.shift();
 
-      var numEdges = randomFromTo(1, 10);
+      var numEdges = randomFromTo(1, edges_count);
       for(var i=1; i <= numEdges; i++) {
         var target_node = new Node(i*steps);
         if(graph.addNode(target_node)) {
@@ -84,7 +86,7 @@ Drawing.SimpleGraph = function(options) {
         }
       }
       steps++;
-    } while(nodes.length != 0 && steps < 10);
+    } while(nodes.length != 0 && steps < nodes_count);
   
     if(layout === "3d") {
       graph.layout = new Layout.ForceDirected3D(graph, {width: 2000, height: 2000, iterations: 1000});
