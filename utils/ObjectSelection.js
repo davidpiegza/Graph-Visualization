@@ -41,6 +41,7 @@ THREE.ObjectSelection = function(parameters) {
         this.INTERSECTED.materials[ 0 ].color.setHex( this.INTERSECTED.currentHex );
       }
       this.INTERSECTED = null;
+      callbackSelected(this.INTERSECTED);
     }
   }  
 }
