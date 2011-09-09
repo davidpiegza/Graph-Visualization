@@ -4,10 +4,11 @@ var Drawing = Drawing || {};
 Drawing.SimpleGraph = function(options) {
   var options = options || {};
   var layout = options.layout || "2d";
+  var selection = options.selection || false;
   var nodes_count = options.nodes || 20;
   var edges_count = options.edges || 10;
 
-  var camera, scene, renderer, interaction, stats;
+  var camera, scene, renderer, interaction, stats, geometry, object_selection;
   var graph = new Graph({limit: options.limit});
   
   var geometries = [];
@@ -41,8 +42,20 @@ Drawing.SimpleGraph = function(options) {
 
     scene = new THREE.Scene();
 
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    // Node geometry
+    if(layout === "3d") {
+      geometry = new THREE.SphereGeometry( 50, 50, 50 );
+    } else {
+      geometry = new THREE.SphereGeometry( 50, 50, 0 );
+    }
+    
+    if(selection) {
+      object_selection = new THREE.ObjectSelection({selected: function(obj) {
+        // display info
+      }});
+    }
 
+    renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     document.body.appendChild( renderer.domElement );
@@ -60,7 +73,6 @@ Drawing.SimpleGraph = function(options) {
     document.body.appendChild( stats.domElement );
     document.body.appendChild( info );
   }
-
 
   function createGraph() {
     var node = new Node(0);
@@ -99,13 +111,9 @@ Drawing.SimpleGraph = function(options) {
 
 
   function drawNode(node) {
-    var geometry;
-    if(layout === "3d") {
-      geometry = new THREE.CubeGeometry( 50, 50, 50 );
-    } else {
-      geometry = new THREE.CubeGeometry( 50, 50, 0 );
-    }
-    var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, wireframe: true } ) ] );
+
+    var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ) ] );
+
 
     // label
     // var labelCanvas = document.createElement( "canvas" );
@@ -178,6 +186,7 @@ Drawing.SimpleGraph = function(options) {
       geometries[i].__dirtyVertices = true;
     }
     
+
     // scene.objects.forEach(function(obj) {
     //   if(obj.type === "label") {
     //     var delta_x = obj.position.x - obj.draw_object.position.x;
@@ -191,7 +200,10 @@ Drawing.SimpleGraph = function(options) {
     //     drawText(obj, obj.draw_object.position.y);
     //   }
     // });
-  
+
+    if(selection) {
+      object_selection.render(scene, camera);
+    }
     renderer.render( scene, camera );
     // interaction.update();
     stats.update();
