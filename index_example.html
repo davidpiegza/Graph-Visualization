@@ -6,10 +6,13 @@
     <script type="text/javascript" src="utils/Stats.js"></script>
     <script type="text/javascript" src="utils/threejs-interaction.js"></script>
     <script type="text/javascript" src="webgl-frameworks/Three.js"></script>
+    <script type="text/javascript" src="utils/ObjectSelection.js"></script>
     <script type="text/javascript" src="Graph.js"></script>
     <script type="text/javascript" src="layouts/force-based-layout.js"></script>
     <script type="text/javascript" src="layouts/force-based-layout-3d.js"></script>
+    <script type="text/javascript" src="layouts/force-directed-sphere.js"></script>
     <script type="text/javascript" src="drawings/simple_graph.js"></script>
+    <script type="text/javascript" src="drawings/sphere_graph.js"></script>
     
     <style type="text/css"> 
       body {
@@ -21,7 +24,7 @@
       }
     </style>
   </head>
-  <body onload="new Drawing.SimpleGraph({layout: '3d'})">
+  <body onload="new Drawing.SimpleGraph({layout: '3d', selection: true})">
     <div id="info">
       
     </div>
