@@ -50,7 +50,7 @@ Layout.ForceDirected = function(graph, options) {
   var repulsion_constant;
   var forceConstant;
   var layout_iterations = 0;
-  var max_iterations = options.iterations || 10000;
+  var max_iterations = options.iterations || 1000;
   var temperature = 0;
   var graph = graph;
   var width = options.width || 200;
@@ -105,9 +105,7 @@ Layout.ForceDirected = function(graph, options) {
     if(layout === "3d") {    
       node_v.layout.tmp_pos_z = node_v.layout.tmp_pos_z || node_v.position.z;
     }
-    
-
-    
+  
     graph.nodes.forEach(function(node_u) {
       if(node_v.id != node_u.id) {
         node_u.layout = node_u.layout || {};
@@ -192,7 +190,7 @@ Layout.ForceDirected = function(graph, options) {
       node.layout.tmp_pos_z += (node.layout.offset_z / delta_length_z) * Math.min(delta_length_z, temperature);
     }
     
-    var c = 100;
+    var c = 200;
     var updated = false;
     if(node.position.x < (node.layout.tmp_pos_x - c) || node.position.x > (node.layout.tmp_pos_x + c)) {
       node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
