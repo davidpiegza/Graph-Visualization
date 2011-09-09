@@ -1,18 +1,72 @@
+/**
+  @author David Piegza
 
+  Implements a simple graph drawing with force-directed placement in 2D and 3D.
+  
+  It uses the force-directed-layout implemented in:
+  https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-directed-layout.js
+  
+  Drawing is done with Three.js: http://github.com/mrdoob/three.js
+
+  To use this drawing, include the graph-min.js file and create a SimpleGraph object:
+  
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Graph Visualization</title>
+      <script type="text/javascript" src="path/to/graph-min.js"></script>
+    </head>
+    <body onload="new Drawing.SimpleGraph({layout: '3d', showStats: true, showInfo: true})">
+    </bod>
+  </html>
+  
+  Parameters:
+  options = {
+    layout: "2d" or "3d"
+
+    showStats: <bool>, displays FPS box
+    showInfo: <bool>, displays some info on the graph and layout
+              The info box is created as <div id="graph-info">, it must be
+              styled and positioned with CSS.
+
+
+    selection: <bool>, enables selection of nodes on mouse over (it displays some info
+               when the showInfo flag is set)
+
+
+    limit: <int>, maximum number of nodes
+    
+    numNodes: <int> - sets the number of nodes to create.
+    numEdges: <int> - sets the maximum number of edges for a node. A node will have 
+              1 to numEdges edges, this is set randomly.
+  }
+  
+
+  Feel free to contribute a new drawing!
+
+ */
+ 
 var Drawing = Drawing || {};
 
 Drawing.SimpleGraph = function(options) {
   var options = options || {};
-  var layout = options.layout || "2d";
-  var selection = options.selection || false;
-  var nodes_count = options.nodes || 20;
-  var edges_count = options.edges || 10;
+  
+  this.layout = options.layout || "2d";
+  this.show_stats = options.showStats || false;
+  this.show_info = options.showInfo || false;
+  this.selection = options.selection || false;
+  this.limit = options.limit || 10;
+  this.nodes_count = options.numNodes || 20;
+  this.edges_count = options.numEdges || 10;
 
-  var camera, scene, renderer, interaction, stats, geometry, object_selection;
+  var camera, scene, renderer, interaction, geometry, object_selection;
+  var stats;
+  var info_text = {};
   var graph = new Graph({limit: options.limit});
   
   var geometries = [];
-  var info;
+  
+  var that=this;
 
   init();
   createGraph();
@@ -43,16 +97,24 @@ Drawing.SimpleGraph = function(options) {
     scene = new THREE.Scene();
 
     // Node geometry
-    if(layout === "3d") {
+    if(that.layout === "3d") {
       geometry = new THREE.SphereGeometry( 50, 50, 50 );
     } else {
       geometry = new THREE.SphereGeometry( 50, 50, 0 );
     }
     
-    if(selection) {
-      object_selection = new THREE.ObjectSelection({selected: function(obj) {
-        // display info
-      }});
+    if(that.selection) {
+      object_selection = new THREE.ObjectSelection({
+        selected: function(obj) {
+          // display info
+          if(obj != null) {
+            info_text.select = "Object " + obj.id;
+          } else {
+            delete info_text.select;
+          }
+          
+        }
+      });
     }
 
     renderer = new THREE.WebGLRenderer({antialias: true});
@@ -61,19 +123,22 @@ Drawing.SimpleGraph = function(options) {
     document.body.appendChild( renderer.domElement );
   
     // Stats.js
-    stats = new Stats();
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.top = '0px';
-    document.body.appendChild( stats.domElement );
+    if(that.show_stats) {
+      stats = new Stats();
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.top = '0px';
+      document.body.appendChild( stats.domElement );
+    }
 
-    info = document.createElement("div");
-    info.style.position = 'absolute';
-    info.style.top = '100px';
-    
-    document.body.appendChild( stats.domElement );
-    document.body.appendChild( info );
+    if(that.show_info) {
+      var info = document.createElement("div");
+      var id_attr = document.createAttribute("id");
+      id_attr.nodeValue = "graph-info";
+      info.setAttributeNode(id_attr);
+      document.body.appendChild( info );
+    }
   }
-
+  
   function createGraph() {
     var node = new Node(0);
     graph.addNode(node);
@@ -81,12 +146,12 @@ Drawing.SimpleGraph = function(options) {
 
     var nodes = [];
     nodes.push(node);
-  
+
     var steps = 1;
-    do {
+    while(nodes.length != 0 && steps < that.nodes_count) {
       var node = nodes.shift();
 
-      var numEdges = randomFromTo(1, edges_count);
+      var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
         var target_node = new Node(i*steps);
         if(graph.addNode(target_node)) {
@@ -98,14 +163,12 @@ Drawing.SimpleGraph = function(options) {
         }
       }
       steps++;
-    } while(nodes.length != 0 && steps < nodes_count);
+    } 
   
-    if(layout === "3d") {
-      graph.layout = new Layout.ForceDirected3D(graph, {width: 2000, height: 2000, iterations: 1000});
-    } else {
-      graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000});
-    }
+    graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, layout: that.layout});
     graph.layout.init();
+    info_text.nodes = "Nodes " + graph.nodes.length;
+    info_text.edges = "Edges " + graph.edges.length;
   }
 
 
@@ -132,7 +195,7 @@ Drawing.SimpleGraph = function(options) {
     draw_object.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
     
-    if(layout === "3d") {
+    if(that.layout === "3d") {
       draw_object.position.z = Math.floor(Math.random() * (area + area + 1) - area);
     }
 
@@ -172,14 +235,16 @@ Drawing.SimpleGraph = function(options) {
   function animate() {
     requestAnimationFrame( animate );
     render();
+    printInfo();
   }
 
 
   function render() {
-    if(graph.layout.generate()) {
-      info.style.border = '10px solid red';
+    if(!graph.layout.finished) {
+      info_text.calc = "Calculating layout..."
+      graph.layout.generate();
     } else {
-      info.style.border = 'none';
+      info_text.calc = ""
     }
 
     for(var i=0; i<geometries.length; i++) {
@@ -201,14 +266,28 @@ Drawing.SimpleGraph = function(options) {
     //   }
     // });
 
-    if(selection) {
+    if(that.selection) {
       object_selection.render(scene, camera);
     }
-    renderer.render( scene, camera );
     // interaction.update();
-    stats.update();
+    if(that.show_stats) {
+      stats.update();
+    }
+    renderer.render( scene, camera );
   }
-
+  
+  function printInfo(text) {
+    var str = '';
+    for(var index in info_text) {
+      if(str != '' && info_text[index] != '') {
+        str += " - ";
+      }
+      str += info_text[index];
+    }
+    if(str != '') {
+      document.getElementById("graph-info").innerHTML = str;
+    }
+  }
 
   function drawText(draw_object, text) {
     draw_object.materials[0].map.image = null;
