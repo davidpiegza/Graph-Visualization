@@ -1,26 +1,63 @@
+/**
+  @author David Piegza
+
+  Implements a sphere graph drawing with force-directed placement.
+  
+  It uses the force-directed-layout implemented in:
+  https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-directed-layout.js
+  
+  Drawing is done with Three.js: http://github.com/mrdoob/three.js
+
+  To use this drawing, include the graph-min.js file and create a SphereGraph object:
+  
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Graph Visualization</title>
+      <script type="text/javascript" src="path/to/graph-min.js"></script>
+    </head>
+    <body onload="new Drawing.SphereGraph({showStats: true, showInfo: true})">
+    </bod>
+  </html>
+  
+  Parameters:
+  options = {
+    tbc
+  }
+  
+
+  Feel free to contribute a new drawing!
+
+ */
+ 
 
 var Drawing = Drawing || {};
 
 Drawing.SphereGraph = function(options) {
   var options = options || {};
-  var layout = options.layout || "2d";
+  
+  this.layout = options.layout || "2d";
+  this.show_stats = options.showStats || false;
+  this.show_info = options.showInfo || false;
+  this.selection = options.selection || false;
+  this.limit = options.limit || 10;
+  this.nodes_count = options.numNodes || 20;
+  this.edges_count = options.numEdges || 10;
 
-  var camera, scene, renderer, interaction, stats;
+  var camera, scene, renderer, interaction, geometry, object_selection;
+  var stats;
+  var info_text = {};
   var graph = new Graph({limit: options.limit});
   
-  var geo = [];
-  var info;
-  
-  
-  var mouse = { x: 0, y: 0 }, mouseOnDown = { x: 0, y: 0 };
-  var rotation = { x: 0, y: 0 },
-      target = { x: Math.PI*3/2, y: Math.PI / 6.0 },
-      targetOnDown = { x: 0, y: 0 };
+  var geometries = [];
 
-  var distance = 100000, distanceTarget = 100000;
-  var padding = 40;
-  var PI_HALF = Math.PI / 2;
+  var sphere_radius = 4900;
+  var max_X = sphere_radius;
+  var min_X = -sphere_radius;
+  var max_Y = sphere_radius;
+  var min_Y = -sphere_radius;
   
+  var that=this;
 
   init();
   createGraph();
@@ -46,7 +83,7 @@ Drawing.SphereGraph = function(options) {
 
       keys: [ 65, 83, 68 ]
     });
-    camera.position.z = 5000;
+    camera.position.z = 10000;
 
     scene = new THREE.Scene();
     
@@ -117,14 +154,33 @@ Drawing.SphereGraph = function(options) {
     // }
     
 
-    var sphere_geometry = new THREE.SphereGeometry(4900, 110, 100);
-    material = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.3 });
+    var sphere_geometry = new THREE.SphereGeometry(sphere_radius, 110, 100);
+    
+    material = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.8 });
     mesh = new THREE.Mesh(sphere_geometry, material);    
     // mesh.matrixAutoUpdate = false;
     scene.addObject(mesh);
 
+    // Node geometry
+    // if(layout === "3d") {
+    //   geometry = new THREE.SphereGeometry( 50, 50, 50 );
+    // } else {
+    //   geometry = new THREE.SphereGeometry( 50, 50, 0 );
+    // }
+    geometry = new THREE.SphereGeometry( 25, 25, 0 );
 
-
+    if(that.selection) {
+      object_selection = new THREE.ObjectSelection({
+        selected: function(obj) {
+          // display info
+          if(obj != null) {
+            info_text.select = "Object " + obj.id;
+          } else {
+            delete info_text.select;
+          }          
+        }
+      });
+    }
 
     renderer = new THREE.WebGLRenderer({antialias: true});
 
@@ -133,27 +189,23 @@ Drawing.SphereGraph = function(options) {
     document.body.appendChild( renderer.domElement );
   
     // Stats.js
-    stats = new Stats();
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.top = '0px';
-    document.body.appendChild( stats.domElement );
+    if(that.show_stats) {
+      stats = new Stats();
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.top = '0px';
+      document.body.appendChild( stats.domElement );
+    }
 
-    info = document.createElement("div");
-    info.style.position = 'absolute';
-    info.style.top = '100px';
-    
-    document.body.appendChild( stats.domElement );
-    document.body.appendChild( info );
-  
-    // info = document.getElementById("info");
+    if(that.show_info) {
+      var info = document.createElement("div");
+      var id_attr = document.createAttribute("id");
+      id_attr.nodeValue = "graph-info";
+      info.setAttributeNode(id_attr);
+      document.body.appendChild( info );
+    }
   }
   
   
-  function randomFromTo(from, to) {
-    return Math.floor(Math.random() * (to - from + 1) + from);
-  }
-  
-
 
   function createGraph() {
     var node = new Node(0);
@@ -164,10 +216,10 @@ Drawing.SphereGraph = function(options) {
     nodes.push(node);
   
     var steps = 1;
-    do {
+    while(nodes.length != 0 && steps < that.nodes_count) {
       var node = nodes.shift();
 
-      var numEdges = randomFromTo(1, 10);
+      var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
         var target_node = new Node(i*steps);
         if(graph.addNode(target_node)) {
@@ -179,9 +231,39 @@ Drawing.SphereGraph = function(options) {
         }
       }
       steps++;
-    } while(nodes.length != 0 && steps < 100);
+    }
   
-    graph.layout = new Layout.ForceDirectedSphere(graph, {width: 2000, height: 2000, iterations: 400});
+    graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, positionUpdated: function(node) {
+      // node.data.draw_object.position.x = node.position.x;
+      // node.data.draw_object.position.y = node.position.y;
+      max_X = Math.max(max_X, node.position.x);
+      min_X = Math.min(min_X, node.position.x);
+      max_Y = Math.max(max_Y, node.position.y);
+      min_Y = Math.min(min_Y, node.position.y);
+      
+      // if(graph.layout.finished) {
+        var lat, lng;
+        if(node.position.x < 0) {
+          lat = (-90/min_X) * node.position.x;
+        } else {
+          lat = (90/max_X) * node.position.x;
+        }
+        if(node.position.y < 0) {
+          lng = (-180/min_Y) * node.position.y;
+        } else {
+          lng = (180/max_Y) * node.position.y;
+        }
+
+        var area = 5000;
+        var phi = (90 - lat) * Math.PI / 180;
+        var theta = (180 - lng) * Math.PI / 180;
+        node.data.draw_object.position.x = area * Math.sin(phi) * Math.cos(theta);
+        node.data.draw_object.position.y = area * Math.cos(phi);
+        node.data.draw_object.position.z = area * Math.sin(phi) * Math.sin(theta);
+      // } else {
+      // }
+      
+    }});
     // if(layout === "3d") {
     //   graph.layout = new Layout.ForceDirected3D(graph, {width: 2000, height: 2000, iterations: 100});
     // } else {
@@ -193,14 +275,7 @@ Drawing.SphereGraph = function(options) {
 
 
   function drawNode(node) {
-    var geometry;
-    geometry = new THREE.CubeGeometry( 50, 50, 50 );
-    // if(layout === "3d") {
-    //   geometry = new THREE.CubeGeometry( 50, 50, 50 );
-    // } else {
-    //   geometry = new THREE.CubeGeometry( 50, 50, 0 );
-    // }
-    var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ), new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, wireframe: true } ) ] );
+    var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ) ] );
 
     // label
     // var labelCanvas = document.createElement( "canvas" );
@@ -218,6 +293,9 @@ Drawing.SphereGraph = function(options) {
     var area = 2000;
     draw_object.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
+    
+    node.position.x = Math.floor(Math.random() * (area + area + 1) - area);
+    node.position.y = Math.floor(Math.random() * (area + area + 1) - area);
       
     // 
     // if(layout === "3d") {
@@ -263,7 +341,7 @@ Drawing.SphereGraph = function(options) {
     node.layout.max_Y = 180;
     node.layout.min_Y = -180;
     
-    node.position = draw_object.position;
+    // node.position = draw_object.position;
     scene.addObject( node.data.draw_object );
   }
 
@@ -281,85 +359,31 @@ Drawing.SphereGraph = function(options) {
       
       line.geometry.__dirtyVertices = true;
       
-      geo.push(tmp_geo);
+      geometries.push(tmp_geo);
       
       scene.addObject( line );
   }
 
 
-
-
-    function addPoint(lat, lng, size, color, subgeo) {
-
-
-      // var phi = (90 - lat) * Math.PI / 180;
-      // var theta = (180 - lng) * Math.PI / 180;
-      // 
-      // point.position.x = 200 * Math.sin(phi) * Math.cos(theta);
-      // point.position.y = 200 * Math.cos(phi);
-      // point.position.z = 200 * Math.sin(phi) * Math.sin(theta);
-      // 
-      // point.lookAt(mesh.position);
-      // 
-      // point.scale.z = -size;
-      // point.updateMatrix();
-      // 
-      // var i;
-      // for (i = 0; i < point.geometry.faces.length; i++) {
-      // 
-      //   point.geometry.faces[i].color = color;
-      // 
-      // }
-      // 
-      // GeometryUtils.merge(subgeo, point);
-      
-      
-      
-      // particles
-
-      // var PI2 = Math.PI * 2;
-      // var material = new THREE.MeshNormalMaterial();
-      // 
-      // for ( var i = 0; i < 1000; i ++ ) {
-      // 
-      //  particle = new THREE.Particle( material );
-      //  particle.position.x = Math.random() * 2 - 1;
-      //  particle.position.y = Math.random() * 2 - 1;
-      //  particle.position.z = Math.random() * 2 - 1;
-      //  particle.position.normalize();
-      //  particle.position.multiplyScalar( Math.random() * 10 + 450 );
-      //  scene.addObject( particle );
-      // 
-      // }
-
-
-      
-      
-      
-    }
-
-
-
-
-
-
   function animate() {
     requestAnimationFrame( animate );
     render();
+    if(that.show_info) {
+      printInfo();
+    }
   }
 
 
   function render() {
-    if(graph.layout.generate()) {
-      info.style.border = '10px solid red';
+    if(!graph.layout.finished) {
+      info_text.calc = "Calculating layout...";
+      graph.layout.generate();
     } else {
-      info.style.border = 'none';      
-      graph.layout.transform();
+      info_text.calc = "";
     }
-      
   
-    for(var i=0; i<geo.length; i++) {
-      geo[i].__dirtyVertices = true;
+    for(var i=0; i<geometries.length; i++) {
+      geometries[i].__dirtyVertices = true;
     }
     for(var i=0; i<graph.nodes.length; i++) {
       graph.nodes[i].data.draw_object.lookAt(camera.position);
@@ -391,12 +415,59 @@ Drawing.SphereGraph = function(options) {
     //     drawText(obj, obj.draw_object.position.y);
     //   }
     // });
+
+    if(that.selection) {
+      object_selection.render(scene, camera);
+    }
+    if(that.show_stats) {
+      stats.update();
+    }
   
     renderer.render( scene, camera );
-    // interaction.update();
-    stats.update();
   }
 
+
+  function transform() {
+    if(transformed) {
+      return;
+    }
+    for(var i=0; i<graph.nodes.length; i++) {
+      var node = graph.nodes[i];
+
+      var lat, lng;
+      if(node.position.x < 0) {
+        lat = (-90/min_X) * node.position.x;
+      } else {
+        lat = (90/max_X) * node.position.x;
+      }
+      if(node.position.y < 0) {
+        lng = (-180/min_Y) * node.position.y;
+      } else {
+        lng = (180/max_Y) * node.position.y;
+      }
+      
+      var area = 5000;
+      var phi = (90 - lat) * Math.PI / 180;
+      var theta = (180 - lng) * Math.PI / 180;
+      node.data.draw_object.position.x = area * Math.sin(phi) * Math.cos(theta);
+      node.data.draw_object.position.y = area * Math.cos(phi);
+      node.data.draw_object.position.z = area * Math.sin(phi) * Math.sin(theta);
+    }
+    transformed = true;
+  }
+
+  function printInfo(text) {
+    var str = '';
+    for(var index in info_text) {
+      if(str != '' && info_text[index] != '') {
+        str += " - ";
+      }
+      str += info_text[index];
+    }
+    if(str != '') {
+      document.getElementById("graph-info").innerHTML = str;
+    }
+  }
 
   function drawText(draw_object, text) {
     draw_object.materials[0].map.image = null;
