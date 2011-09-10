@@ -289,9 +289,7 @@ Drawing.SimpleGraph = function(options) {
       }
       str += info_text[index];
     }
-    if(str != '') {
-      document.getElementById("graph-info").innerHTML = str;
-    }
+    document.getElementById("graph-info").innerHTML = str;
   }
 
   function drawText(draw_object, text) {
