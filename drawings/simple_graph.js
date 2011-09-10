@@ -235,16 +235,18 @@ Drawing.SimpleGraph = function(options) {
   function animate() {
     requestAnimationFrame( animate );
     render();
-    printInfo();
+    if(that.show_info) {
+      printInfo();
+    }
   }
 
 
   function render() {
     if(!graph.layout.finished) {
-      info_text.calc = "Calculating layout..."
+      info_text.calc = "Calculating layout...";
       graph.layout.generate();
     } else {
-      info_text.calc = ""
+      info_text.calc = "";
     }
 
     for(var i=0; i<geometries.length; i++) {
