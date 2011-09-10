@@ -378,7 +378,7 @@ Drawing.SphereGraph = function(options) {
 
   function render() {
     if(!graph.layout.finished) {
-      info_text.calc = "Calculating layout...";
+      info_text.calc = "<span style='color: red'>Calculating layout...</span>";
       graph.layout.generate();
     } else {
       info_text.calc = "";
