@@ -11,7 +11,31 @@
     <script type="text/javascript" src="layouts/force-directed-layout.js"></script>
     <script type="text/javascript" src="drawings/simple_graph.js"></script>
     <script type="text/javascript" src="drawings/sphere_graph.js"></script>
-    
+
+    <script type="text/javascript">
+      var drawing;
+      function createDrawing() {
+        var index = parseInt(location.search.split("?")[1]);
+        if(isNaN(index)) {
+          index = 1;
+        }        
+        switch(index) {
+          case 0:
+            drawing = new Drawing.SimpleGraph({layout: '2d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+            break;
+          case 1:
+            drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+            break;
+          case 2:
+            drawing = new Drawing.SphereGraph({numNodes: 50, showStats: true, showInfo: true});
+            break;
+          default:
+              drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+        }
+        document.getElementById("drawing_select").selectedIndex = index;
+      }
+    </script>
+        
     <style type="text/css"> 
       body {
         margin: 0;
@@ -29,13 +53,39 @@
         color: #333;
         padding: 5px 10px;
       }
+      #options {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 10;
+      }
     </style>
   </head>
-  <body onload="new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true})">
+  <body onload="createDrawing()">
+    <div id="options">
+      <form>
+        <p>
+          <label>Drawing</label><br>
+          <select id="drawing_select" onchange="window.location.href = 'http://localhost/master/graph-visualization/index_example.html?' + this.selectedIndex;">
+            <option>2D-Force-Directed</option>
+            <option selected="selected">3D-Force-Directed</option>
+            <option>Sphere Graph</option>
+          </select>
+        </p>
+        <p>
+          <input type="checkbox" id="show_labels"> 
+          <label for="show_labels">Show labels</label>
+        </p>
+        <p>
+          <input type="button" value="Stop layout" onclick="drawing.stop_calculating();"> 
+        </p>
+      </form>
+    </div>
+
     <div style="position: absolute; bottom: 0;">
       Rotate: Left Mouse Button and Move<br />
-      Zoom: Left Mouse Button + Key S and Move<br /> 
-      Drag: Left Mouse Button + Key D and Move
-    </div>
+      Zoom: Press Key S + Left Mouse Button and Move<br /> 
+      Drag: Press Key D + Left Mouse Button and Move
+    </div>    
   </body>
 </html>
