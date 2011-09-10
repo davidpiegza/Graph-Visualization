@@ -1,4 +1,15 @@
+/**
+  @author David Piegza
 
+  Implements a selection for objects in a scene.
+  
+  It invokes a callback function when the mouse enters and when it leaves the object.
+  Based on a Three.js selection example.
+  
+  Parameters:
+    domElement: HTMLDomElement
+    selected: callback function, passes the current selected object
+ */
 
 THREE.ObjectSelection = function(parameters) {
   var parameters = parameters || {};
