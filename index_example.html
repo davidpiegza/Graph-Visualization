@@ -8,9 +8,7 @@
     <script type="text/javascript" src="webgl-frameworks/Three.js"></script>
     <script type="text/javascript" src="utils/ObjectSelection.js"></script>
     <script type="text/javascript" src="Graph.js"></script>
-    <script type="text/javascript" src="layouts/force-based-layout.js"></script>
-    <script type="text/javascript" src="layouts/force-based-layout-3d.js"></script>
-    <script type="text/javascript" src="layouts/force-directed-sphere.js"></script>
+    <script type="text/javascript" src="layouts/force-directed-layout.js"></script>
     <script type="text/javascript" src="drawings/simple_graph.js"></script>
     <script type="text/javascript" src="drawings/sphere_graph.js"></script>
     
@@ -22,11 +20,22 @@
         font: 11px courier;
         overflow: hidden;
       }
+      #graph-info {
+        position: absolute;
+        top: 0px;
+        left: 40%;
+        margin: 10px;
+        background-color: #ffffe0;
+        color: #333;
+        padding: 5px 10px;
+      }
     </style>
   </head>
-  <body onload="new Drawing.SimpleGraph({layout: '3d', selection: true})">
-    <div id="info">
-      
+  <body onload="new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true})">
+    <div style="position: absolute; bottom: 0;">
+      Rotate: Left Mouse Button and Move<br />
+      Zoom: Left Mouse Button + Key S and Move<br /> 
+      Drag: Left Mouse Button + Key D and Move
     </div>
   </body>
 </html>
