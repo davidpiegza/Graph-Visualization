@@ -219,4 +219,8 @@ Layout.ForceDirected = function(graph, options) {
     }
     return true;
   };
+  
+  this.stop_calculating = function() {
+    layout_iterations = this.max_iterations;
+  }
 };
