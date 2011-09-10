@@ -2,19 +2,20 @@
 
 THREE.ObjectSelection = function(parameters) {
   var parameters = parameters || {};
-  
-  var mouse = { x: 0, y: 0 };
+
+  this.domElement = parameters.domElement || document;
   this.projector = new THREE.Projector;
   this.INTERSECTED;
   
   var callbackSelected = parameters.selected;
+  var mouse = { x: 0, y: 0 };
 
-  document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+  this.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
   function onDocumentMouseMove( event ) {
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   }
-  
+
   this.render = function(scene, camera) {
     // find intersections
     camera.update();
