@@ -74,6 +74,9 @@ Drawing.SimpleGraph = function(options) {
 
   function init() {
     // Three.js initialization
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    
     camera = new THREE.TrackballCamera({
       fov: 40, 
       aspect: window.innerWidth / window.innerHeight,
@@ -89,6 +92,8 @@ Drawing.SimpleGraph = function(options) {
 
       staticMoving: false,
       dynamicDampingFactor: 0.3,
+      
+      domElement: renderer.domElement,
 
       keys: [ 65, 83, 68 ]
     });
@@ -105,6 +110,7 @@ Drawing.SimpleGraph = function(options) {
     
     if(that.selection) {
       object_selection = new THREE.ObjectSelection({
+        domElement: renderer.domElement,
         selected: function(obj) {
           // display info
           if(obj != null) {
@@ -116,9 +122,6 @@ Drawing.SimpleGraph = function(options) {
         }
       });
     }
-
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize( window.innerWidth, window.innerHeight );
 
     document.body.appendChild( renderer.domElement );
   
@@ -302,9 +305,11 @@ Drawing.SimpleGraph = function(options) {
     draw_object.materials[0].map.image = textCanvas;
   }
 
-
   function randomFromTo(from, to) {
     return Math.floor(Math.random() * (to - from + 1) + from);
   }
-
+  
+  this.stop_calculating = function() {
+    graph.layout.stop_calculating();
+  }
 }
