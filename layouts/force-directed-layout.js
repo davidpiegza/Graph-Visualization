@@ -84,11 +84,14 @@ Layout.ForceDirected = function(graph, options) {
       for(var i=0; i < nodes_length; i++) {
         var node_v = graph.nodes[i];
         node_v.layout = node_v.layout || {};
-        node_v.layout.offset_x = 0;
-        node_v.layout.offset_y = 0;
-        if(this.layout === "3d") {
-          node_v.layout.offset_z = 0;
+        if(i==0) {
+          node_v.layout.offset_x = 0;
+          node_v.layout.offset_y = 0;
+          if(this.layout === "3d") {
+            node_v.layout.offset_z = 0;
+          }
         }
+
         node_v.layout.force = 0;
         node_v.layout.tmp_pos_x = node_v.layout.tmp_pos_x || node_v.position.x;
         node_v.layout.tmp_pos_y = node_v.layout.tmp_pos_y || node_v.position.y;
@@ -96,9 +99,10 @@ Layout.ForceDirected = function(graph, options) {
           node_v.layout.tmp_pos_z = node_v.layout.tmp_pos_z || node_v.position.z;
         }
 
-        for(var j=0; j < nodes_length; j++) {
+        for(var j=i+1; j < nodes_length; j++) {
           var node_u = graph.nodes[j];
-          if(node_v.id != node_u.id) {
+          // if(node_v.id != node_u.id) {
+          if(i != j) {
             node_u.layout = node_u.layout || {};
             node_u.layout.tmp_pos_x = node_u.layout.tmp_pos_x || node_u.position.x;
             node_u.layout.tmp_pos_y = node_u.layout.tmp_pos_y || node_u.position.y;
@@ -127,8 +131,20 @@ Layout.ForceDirected = function(graph, options) {
 
             node_v.layout.offset_x += (delta_x / delta_length) * force;
             node_v.layout.offset_y += (delta_y / delta_length) * force;
+
+            if(i==0) {
+              node_u.layout.offset_x = 0;
+              node_u.layout.offset_y = 0;
+              if(this.layout === "3d") {
+                node_u.layout.offset_z = 0;
+              }
+            }
+            node_u.layout.offset_x += -((delta_x / delta_length) * force);
+            node_u.layout.offset_y += -((delta_y / delta_length) * force);
+
             if(this.layout === "3d") {
               node_v.layout.offset_z += (delta_z / delta_length_z) * force_z;
+              node_u.layout.offset_z += -((delta_z / delta_length_z) * force_z);
             }
           }
         }
