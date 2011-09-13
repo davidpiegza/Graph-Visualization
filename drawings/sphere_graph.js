@@ -272,6 +272,8 @@ Drawing.SphereGraph = function(options) {
     //   graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 2000});
     // }
     graph.layout.init();
+    info_text.nodes = "Nodes " + graph.nodes.length;
+    info_text.edges = "Edges " + graph.edges.length;
   }
 
 
