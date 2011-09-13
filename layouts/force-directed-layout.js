@@ -42,7 +42,7 @@ Layout.ForceDirected = function(graph, options) {
   var options = options || {};
   
   this.layout = options.layout || "2d";
-  this.attraction_multiplier = options.attraction || 5;
+  this.attraction_multiplier = options.attraction || 0.75;
   this.repulsion_multiplier = options.repulsion || 0.75;
   this.max_iterations = options.iterations || 1000;
   this.graph = graph;
@@ -74,10 +74,10 @@ Layout.ForceDirected = function(graph, options) {
     attraction_constant = this.attraction_multiplier * forceConstant;
     repulsion_constant = this.repulsion_multiplier * forceConstant;
   };
-  
+
   this.generate = function() {
     // TODO: stop if total force reached 0
-    if(layout_iterations < this.max_iterations) {
+    if(layout_iterations < this.max_iterations && temperature > 0.000001) {
       var start = new Date().getTime();
       
       // calculate repulsion
@@ -139,12 +139,12 @@ Layout.ForceDirected = function(graph, options) {
                 node_u.layout.offset_z = 0;
               }
             }
-            node_u.layout.offset_x += -((delta_x / delta_length) * force);
-            node_u.layout.offset_y += -((delta_y / delta_length) * force);
+            node_u.layout.offset_x -= (delta_x / delta_length) * force;
+            node_u.layout.offset_y -= (delta_y / delta_length) * force;
 
             if(this.layout === "3d") {
               node_v.layout.offset_z += (delta_z / delta_length_z) * force_z;
-              node_u.layout.offset_z += -((delta_z / delta_length_z) * force_z);
+              node_u.layout.offset_z -= (delta_z / delta_length_z) * force_z;
             }
           }
         }
@@ -199,22 +199,30 @@ Layout.ForceDirected = function(graph, options) {
           node.layout.tmp_pos_z += (node.layout.offset_z / delta_length_z) * Math.min(delta_length_z, temperature);
         }
 
-        var c = 200;
-        var updated = false;
-        if(node.position.x < (node.layout.tmp_pos_x - c) || node.position.x > (node.layout.tmp_pos_x + c)) {
-          node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
-          updated = true;
-        }
-        if(node.position.y < (node.layout.tmp_pos_y - c) || node.position.y > (node.layout.tmp_pos_y + c)) {
+        var updated = true;
+        node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
           node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
-          updated = true;
-        }
+
         if(this.layout === "3d") {    
-          if(node.position.z < (node.layout.tmp_pos_z - c) || node.position.z > (node.layout.tmp_pos_z + c)) {
-            node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
-            updated = true;
-          }
+          node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
         }
+
+        // var c = 200;
+        // var updated = false;
+        // if(node.position.x < (node.layout.tmp_pos_x - c) || node.position.x > (node.layout.tmp_pos_x + c)) {
+        //   node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
+        //   updated = true;
+        // }
+        // if(node.position.y < (node.layout.tmp_pos_y - c) || node.position.y > (node.layout.tmp_pos_y + c)) {
+        //   node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
+        //   updated = true;
+        // }
+        // if(this.layout === "3d") {    
+        //   if(node.position.z < (node.layout.tmp_pos_z - c) || node.position.z > (node.layout.tmp_pos_z + c)) {
+        //     node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
+        //     updated = true;
+        //   }
+        // }
 
         if(updated && typeof callback_positionUpdated === 'function') {
           callback_positionUpdated(node);
@@ -224,7 +232,9 @@ Layout.ForceDirected = function(graph, options) {
       mean_time += end - start;
       // info.innerHTML = "node_force: " + parseInt(node_force) + "<br>edge_force: " + edge_force + "<br>div: " + (node_force-edge_force);
 
-      // temperature *= (1.0 - (layout_iterations / this.max_iterations));
+      temperature *= (1 - (layout_iterations / this.max_iterations));
+      // temperature -= 1/100;
+      // console.log(temperature);
       layout_iterations++;
     } else {
       if(!this.finished) {        
