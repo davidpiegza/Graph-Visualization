@@ -18,13 +18,14 @@
         var index = parseInt(location.search.split("?")[1]);
         if(isNaN(index)) {
           index = 1;
-        }        
+        }
+        /* Change these values to draw more nodes (numNodes) */
         switch(index) {
           case 0:
-            drawing = new Drawing.SimpleGraph({layout: '2d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+            drawing = new Drawing.SimpleGraph({layout: '2d', selection: false, numNodes: 50, showStats: true, showInfo: true});
             break;
           case 1:
-            drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+            drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, graphLayout:{attraction: 5, repulsion: 0.5}, showStats: true, showInfo: true});
             break;
           case 2:
             drawing = new Drawing.SphereGraph({numNodes: 50, showStats: true, showInfo: true});
