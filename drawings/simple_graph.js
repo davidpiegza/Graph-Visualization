@@ -52,6 +52,7 @@ Drawing.SimpleGraph = function(options) {
   var options = options || {};
   
   this.layout = options.layout || "2d";
+  this.layout_options = options.graphLayout || {};
   this.show_stats = options.showStats || false;
   this.show_info = options.showInfo || false;
   this.selection = options.selection || false;
@@ -143,6 +144,7 @@ Drawing.SimpleGraph = function(options) {
   }
   
   function createGraph() {
+
     var node = new Node(0);
     graph.addNode(node);
     drawNode(node);
@@ -167,13 +169,82 @@ Drawing.SimpleGraph = function(options) {
       }
       steps++;
     } 
-  
-    graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, layout: that.layout});
+    
+    that.layout_options.width = that.layout_options.width || 2000;
+    that.layout_options.height = that.layout_options.height || 2000;
+    that.layout_options.iterations = that.layout_options.iterations || 100000;
+    that.layout_options.layout = that.layout_options.layout || that.layout;
+    graph.layout = new Layout.ForceDirected(graph, that.layout_options);
     graph.layout.init();
     info_text.nodes = "Nodes " + graph.nodes.length;
     info_text.edges = "Edges " + graph.edges.length;
   }
 
+  // for testing...
+  // function createCube() {
+  // 
+  //   var a1 = new Node("a1");
+  //   graph.addNode(a1);
+  //   drawNode(a1);
+  // 
+  //   var a2 = new Node("a2");
+  //   graph.addNode(a2);
+  //   drawNode(a2);
+  //   var a3 = new Node("a3");
+  //   graph.addNode(a3);
+  //   drawNode(a3);
+  //   var a4 = new Node("a4");
+  //   graph.addNode(a4);
+  //   drawNode(a4);
+  //   var b1 = new Node("b1");
+  //   graph.addNode(b1);
+  //   drawNode(b1);
+  //   var b2 = new Node("b2");
+  //   graph.addNode(b2);
+  //   drawNode(b2);
+  //   var b3 = new Node("b3");
+  //   graph.addNode(b3);
+  //   drawNode(b3);
+  //   var b4 = new Node("b4");
+  //   graph.addNode(b4);
+  //   drawNode(b4);
+  // 
+  //   graph.addEdge(a1, a2);
+  //   drawEdge(a1, a2);
+  //   graph.addEdge(a1, a4);
+  //   drawEdge(a1, a4);
+  //   graph.addEdge(a1, b1);
+  //   drawEdge(a1, b1);
+  // 
+  //   graph.addEdge(a2, a3);
+  //   drawEdge(a2, a3);
+  //   graph.addEdge(a2, b2);
+  //   drawEdge(a2, b2);
+  // 
+  //   graph.addEdge(a3, a4);
+  //   drawEdge(a3, a4);
+  //   graph.addEdge(a3, b3);
+  //   drawEdge(a3, b3);
+  // 
+  //   graph.addEdge(a4, b4);
+  //   drawEdge(a4, b4);
+  // 
+  //   graph.addEdge(b1, b2);
+  //   drawEdge(b1, b2);
+  //   graph.addEdge(b1, b4);
+  //   drawEdge(b1, b4);
+  // 
+  //   graph.addEdge(b2, b3);
+  //   drawEdge(b2, b3);
+  //   graph.addEdge(b3, b4);
+  //   drawEdge(b3, b4);
+  // 
+  // 
+  //   graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 10000, layout: that.layout});
+  //   graph.layout.init();
+  //   info_text.nodes = "Nodes " + graph.nodes.length;
+  //   info_text.edges = "Edges " + graph.edges.length;
+  // }  
 
 
   function drawNode(node) {
@@ -194,7 +265,7 @@ Drawing.SimpleGraph = function(options) {
     // var xm = new THREE.MeshBasicMaterial( { map: new THREE.Texture( labelCanvas ), transparent: true } );
     // xm.map.needsUpdate = true;
 
-    var area = 2000;
+    var area = 5000;
     draw_object.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
     
