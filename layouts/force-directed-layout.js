@@ -42,7 +42,7 @@ Layout.ForceDirected = function(graph, options) {
   var options = options || {};
   
   this.layout = options.layout || "2d";
-  this.attraction_multiplier = options.attraction || 0.75;
+  this.attraction_multiplier = options.attraction || 5;
   this.repulsion_multiplier = options.repulsion || 0.75;
   this.max_iterations = options.iterations || 1000;
   this.graph = graph;
