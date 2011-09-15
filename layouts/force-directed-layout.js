@@ -4,7 +4,7 @@
   Implements a force-directed layout, the algorithm is based on Fruchterman and Reingold and
   the JUNG implementation.
 
-  Needs the following graph data structure:
+  Needs the graph data structure Graph.js:
   https://github.com/davidpiegza/Graph-Visualization/blob/master/Graph.js
 
   Parameters:
@@ -20,12 +20,12 @@
     positionUpdated: <function>, called when the position of the node has been updated
   }
   
-  Examples
+  Examples:
   
-  create:  
+  create:
   layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, layout: "3d"});
   
-  call init when graph is loaded (and for reset or when new nodes has been added to graph):
+  call init when graph is loaded (and for reset or when new nodes has been added to the graph):
   layout.init();
   
   call generate in a render method, returns true if it's still calculating and false if it's finished
@@ -65,6 +65,9 @@ Layout.ForceDirected = function(graph, options) {
   // performance test
   var mean_time = 0;
 
+  /**
+   * Initialize parameters used by the algorithm.
+   */
   this.init = function() {
     this.finished = false;
     temperature = this.width / 10.0;
@@ -75,8 +78,13 @@ Layout.ForceDirected = function(graph, options) {
     repulsion_constant = this.repulsion_multiplier * forceConstant;
   };
 
+  /**
+   * Generates the force-directed layout.
+   *
+   * It finishes when the number of max_iterations has been reached or when
+   * the temperature is nearly zero.
+   */
   this.generate = function() {
-    // TODO: stop if total force reached 0
     if(layout_iterations < this.max_iterations && temperature > 0.000001) {
       var start = new Date().getTime();
       
@@ -101,7 +109,6 @@ Layout.ForceDirected = function(graph, options) {
 
         for(var j=i+1; j < nodes_length; j++) {
           var node_u = graph.nodes[j];
-          // if(node_v.id != node_u.id) {
           if(i != j) {
             node_u.layout = node_u.layout || {};
             node_u.layout.tmp_pos_x = node_u.layout.tmp_pos_x || node_u.position.x;
@@ -150,7 +157,7 @@ Layout.ForceDirected = function(graph, options) {
         }
       }
       
-      // calc attraction
+      // calculate attraction
       for(var i=0; i < edges_length; i++) {
         var edge = graph.edges[i];
         var delta_x = edge.source.layout.tmp_pos_x - edge.target.layout.tmp_pos_x;
@@ -184,14 +191,13 @@ Layout.ForceDirected = function(graph, options) {
         }        
       }
       
-      // calc positions
+      // calculate positions
       for(var i=0; i < nodes_length; i++) {
         var node = graph.nodes[i];
         var delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x + node.layout.offset_y * node.layout.offset_y));
         if(this.layout === "3d") {
           var delta_length_z = Math.max(EPSILON, Math.sqrt(node.layout.offset_z * node.layout.offset_z + node.layout.offset_y * node.layout.offset_y));
         }
-        // alert(delta_length_z + " " + this.layout);
 
         node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
         node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
@@ -206,36 +212,17 @@ Layout.ForceDirected = function(graph, options) {
         if(this.layout === "3d") {    
           node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
         }
-
-        // var c = 200;
-        // var updated = false;
-        // if(node.position.x < (node.layout.tmp_pos_x - c) || node.position.x > (node.layout.tmp_pos_x + c)) {
-        //   node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
-        //   updated = true;
-        // }
-        // if(node.position.y < (node.layout.tmp_pos_y - c) || node.position.y > (node.layout.tmp_pos_y + c)) {
-        //   node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
-        //   updated = true;
-        // }
-        // if(this.layout === "3d") {    
-        //   if(node.position.z < (node.layout.tmp_pos_z - c) || node.position.z > (node.layout.tmp_pos_z + c)) {
-        //     node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
-        //     updated = true;
-        //   }
-        // }
-
+        
+        // execute callback function if positions has been updated
         if(updated && typeof callback_positionUpdated === 'function') {
           callback_positionUpdated(node);
         }
       }
+      temperature *= (1 - (layout_iterations / this.max_iterations));
+      layout_iterations++;
+
       var end = new Date().getTime();
       mean_time += end - start;
-      // info.innerHTML = "node_force: " + parseInt(node_force) + "<br>edge_force: " + edge_force + "<br>div: " + (node_force-edge_force);
-
-      temperature *= (1 - (layout_iterations / this.max_iterations));
-      // temperature -= 1/100;
-      // console.log(temperature);
-      layout_iterations++;
     } else {
       if(!this.finished) {        
         console.log("Average time: " + (mean_time/layout_iterations) + " ms");
@@ -245,7 +232,10 @@ Layout.ForceDirected = function(graph, options) {
     }
     return true;
   };
-  
+
+  /**
+   * Stops the calculation by setting the current_iterations to max_iterations.
+   */
   this.stop_calculating = function() {
     layout_iterations = this.max_iterations;
   }
