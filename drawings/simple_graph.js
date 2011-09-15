@@ -123,9 +123,6 @@ Drawing.SimpleGraph = function(options) {
           }
         },
         clicked: function(obj) {
-          if(obj != null) {
-            alert(obj.id);
-          }
         }
       });
     }
