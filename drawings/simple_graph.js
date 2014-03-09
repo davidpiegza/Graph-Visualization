@@ -204,7 +204,7 @@ Drawing.SimpleGraph = function(options) {
         var label_object = new THREE.Label(node.id);
       }
       node.data.label_object = label_object;
-      scene.addObject( node.data.label_object );
+      scene.add( node.data.label_object );
     }
 
     var area = 5000;
@@ -293,7 +293,7 @@ Drawing.SimpleGraph = function(options) {
       for(var i=0; i<length; i++) {
         var node = graph.nodes[i];
         if(node.data.label_object != undefined) {
-          scene.removeObject( node.data.label_object );
+          scene.remove( node.data.label_object );
           node.data.label_object = undefined;
         }
       }
