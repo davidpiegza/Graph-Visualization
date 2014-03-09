@@ -1,4 +1,4 @@
-<!-- 
+<!--
   This is an example html file with some options added. The minimum html file for
   the graph visualization is:
   <!DOCTYPE html>
@@ -9,13 +9,13 @@
     </head>
     <body onload="new Drawing.SimpleGraph({layout: '3d', showStats: true, showInfo: true})">
     </bod>
-  </html> 
+  </html>
 -->
 <!DOCTYPE html>
 <html>
   <head>
     <title>Graph Visualization</title>
-    <script type="text/javascript" src="build/graph-min.js"></script>
+    <script type="text/javascript" src="build/graph.min.js"></script>
 
     <script type="text/javascript">
       var drawing;
@@ -41,8 +41,8 @@
         document.getElementById("drawing_select").selectedIndex = index;
       }
     </script>
-        
-    <style type="text/css"> 
+
+    <style type="text/css">
       body {
         margin: 0;
         padding: 0;
@@ -83,15 +83,15 @@
           <label for="show_labels">Show labels</label>
         </p>
         <p>
-          <input type="button" value="Stop layout" onclick="drawing.stop_calculating();"> 
+          <input type="button" value="Stop layout" onclick="drawing.stop_calculating();">
         </p>
       </form>
     </div>
 
     <div style="position: absolute; bottom: 0;">
       Rotate: Left Mouse Button and Move<br />
-      Zoom: Press Key S + Left Mouse Button and Move<br /> 
+      Zoom: Press Key S + Left Mouse Button and Move<br />
       Drag: Press Key D + Left Mouse Button and Move
-    </div>    
+    </div>
   </body>
 </html>
