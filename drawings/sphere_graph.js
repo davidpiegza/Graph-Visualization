@@ -2,14 +2,14 @@
   @author David Piegza
 
   Implements a sphere graph drawing with force-directed placement.
-  
+
   It uses the force-directed-layout implemented in:
   https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-directed-layout.js
-  
+
   Drawing is done with Three.js: http://github.com/mrdoob/three.js
 
   To use this drawing, include the graph-min.js file and create a SphereGraph object:
-  
+
   <!DOCTYPE html>
   <html>
     <head>
@@ -19,7 +19,7 @@
     <body onload="new Drawing.SphereGraph({showStats: true, showInfo: true})">
     </bod>
   </html>
-  
+
   Parameters:
   options = {
     layout: "2d" or "3d"
@@ -35,23 +35,23 @@
 
 
     limit: <int>, maximum number of nodes
-  
+
     numNodes: <int> - sets the number of nodes to create.
-    numEdges: <int> - sets the maximum number of edges for a node. A node will have 
+    numEdges: <int> - sets the maximum number of edges for a node. A node will have
               1 to numEdges edges, this is set randomly.
   }
-  
+
 
   Feel free to contribute a new drawing!
 
  */
- 
+
 
 var Drawing = Drawing || {};
 
 Drawing.SphereGraph = function(options) {
   var options = options || {};
-  
+
   this.layout = options.layout || "2d";
   this.show_stats = options.showStats || false;
   this.show_info = options.showInfo || false;
@@ -60,11 +60,11 @@ Drawing.SphereGraph = function(options) {
   this.nodes_count = options.numNodes || 20;
   this.edges_count = options.numEdges || 10;
 
-  var camera, scene, renderer, interaction, geometry, object_selection;
+  var camera, controls, scene, renderer, interaction, geometry, object_selection;
   var stats;
   var info_text = {};
   var graph = new Graph({limit: options.limit});
-  
+
   var geometries = [];
 
   var sphere_radius = 4900;
@@ -72,7 +72,7 @@ Drawing.SphereGraph = function(options) {
   var min_X = -sphere_radius;
   var max_Y = sphere_radius;
   var min_Y = -sphere_radius;
-  
+
   var that=this;
 
   init();
@@ -81,38 +81,35 @@ Drawing.SphereGraph = function(options) {
 
   function init() {
     // Three.js initialization
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({alpha: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
-    
-    camera = new THREE.TrackballCamera({
-      fov: 35, 
-      aspect: window.innerWidth / window.innerHeight,
-      near: 1,
-      far: 100000,
 
-      rotateSpeed: 0.5,
-      zoomSpeed: 5.2,
-      panSpeed: 1,
-
-      noZoom: false,
-      noPan: false,
-
-      staticMoving: false,
-      dynamicDampingFactor: 0.3,
-      
-      domElement: renderer.domElement,
-
-      keys: [ 65, 83, 68 ]
-    });
+    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 100000);
     camera.position.z = 10000;
+
+    controls = new THREE.TrackballControls(camera);
+
+    controls.rotateSpeed = 0.5;
+    controls.zoomSpeed = 5.2;
+    controls.panSpeed = 1;
+
+    controls.noZoom = false
+    controls.noPan = false;
+
+    controls.staticMoving = false;
+    controls.dynamicDampingFactor = 0.3;
+
+    controls.keys = [ 65, 83, 68 ];
+
+    controls.addEventListener('change', render);
 
     scene = new THREE.Scene();
 
     // Create sphere geometry and add it to the scene
     var sphere_geometry = new THREE.SphereGeometry(sphere_radius, 110, 100);
     material = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.8 });
-    mesh = new THREE.Mesh(sphere_geometry, material);    
-    scene.addObject(mesh);
+    mesh = new THREE.Mesh(sphere_geometry, material);
+    scene.add(mesh);
 
     // Create node geometry (will be used in drawNode())
     geometry = new THREE.SphereGeometry( 25, 25, 0 );
@@ -127,13 +124,13 @@ Drawing.SphereGraph = function(options) {
             info_text.select = "Object " + obj.id;
           } else {
             delete info_text.select;
-          }          
+          }
         }
       });
     }
 
     document.body.appendChild( renderer.domElement );
-  
+
     // Stats.js
     if(that.show_stats) {
       stats = new Stats();
@@ -151,7 +148,7 @@ Drawing.SphereGraph = function(options) {
       document.body.appendChild( info );
     }
   }
-  
+
 
   /**
    *  Creates a graph with random nodes and edges.
@@ -165,7 +162,7 @@ Drawing.SphereGraph = function(options) {
 
     var nodes = [];
     nodes.push(node);
-  
+
     var steps = 1;
     while(nodes.length != 0 && steps < that.nodes_count) {
       var node = nodes.shift();
@@ -183,14 +180,14 @@ Drawing.SphereGraph = function(options) {
       }
       steps++;
     }
-  
+
     // Transform a lat, lng-position to x,y.
     graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, positionUpdated: function(node) {
       max_X = Math.max(max_X, node.position.x);
       min_X = Math.min(min_X, node.position.x);
       max_Y = Math.max(max_Y, node.position.y);
       min_Y = Math.min(min_Y, node.position.y);
-      
+
       var lat, lng;
       if(node.position.x < 0) {
         lat = (-90/min_X) * node.position.x;
@@ -209,7 +206,7 @@ Drawing.SphereGraph = function(options) {
       node.data.draw_object.position.x = area * Math.sin(phi) * Math.cos(theta);
       node.data.draw_object.position.y = area * Math.cos(phi);
       node.data.draw_object.position.z = area * Math.sin(phi) * Math.sin(theta);
-      
+
     }});
     graph.layout.init();
     info_text.nodes = "Nodes " + graph.nodes.length;
@@ -221,15 +218,15 @@ Drawing.SphereGraph = function(options) {
    *  Create a node object and add it to the scene.
    */
   function drawNode(node) {
-    var draw_object = new THREE.Mesh( geometry, [ new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ) ] );
+    var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ) );
 
     var area = 2000;
     draw_object.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
-    
+
     node.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     node.position.y = Math.floor(Math.random() * (area + area + 1) - area);
-    
+
     draw_object.id = node.id;
     node.data.draw_object = draw_object;
     node.layout = {}
@@ -237,9 +234,9 @@ Drawing.SphereGraph = function(options) {
     node.layout.min_X = -90;
     node.layout.max_Y = 180;
     node.layout.min_Y = -180;
-    
+
     // node.position = draw_object.position;
-    scene.addObject( node.data.draw_object );
+    scene.add( node.data.draw_object );
   }
 
 
@@ -250,23 +247,22 @@ Drawing.SphereGraph = function(options) {
     material = new THREE.LineBasicMaterial( { color: 0xCCCCCC, opacity: 0.5, linewidth: 0.5 } );
     var tmp_geo = new THREE.Geometry();
 
-    tmp_geo.vertices.push(new THREE.Vertex(source.data.draw_object.position));
-    tmp_geo.vertices.push(new THREE.Vertex(target.data.draw_object.position));
+    tmp_geo.vertices.push(source.data.draw_object.position);
+    tmp_geo.vertices.push(target.data.draw_object.position);
 
     line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
     line.scale.x = line.scale.y = line.scale.z = 1;
     line.originalScale = 1;
 
-    line.geometry.__dirtyVertices = true;
-
     geometries.push(tmp_geo);
 
-    scene.addObject( line );
+    scene.add( line );
   }
 
 
   function animate() {
     requestAnimationFrame( animate );
+    controls.update();
     render();
     if(that.show_info) {
       printInfo();
@@ -282,12 +278,12 @@ Drawing.SphereGraph = function(options) {
     } else {
       info_text.calc = "";
     }
-  
+
     // Update position of lines (edges)
     for(var i=0; i<geometries.length; i++) {
-      geometries[i].__dirtyVertices = true;
+      geometries[i].verticesNeedUpdate = true;
     }
-    
+
     // set lookat of nodes to camera
     for(var i=0; i<graph.nodes.length; i++) {
       graph.nodes[i].data.draw_object.lookAt(camera.position);
@@ -297,7 +293,7 @@ Drawing.SphereGraph = function(options) {
     if(that.selection) {
       object_selection.render(scene, camera);
     }
-    
+
     // update stats
     if(that.show_stats) {
       stats.update();
