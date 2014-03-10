@@ -388,9 +388,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     if ( _this.enabled === false ) return;
 
-    event.preventDefault();
-    event.stopPropagation();
-
     if ( _state === STATE.NONE ) {
 
       _state = event.button;
@@ -425,9 +422,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     if ( _this.enabled === false ) return;
 
-    event.preventDefault();
-    event.stopPropagation();
-
     if ( _state === STATE.ROTATE && !_this.noRotate ) {
 
       _this.getMouseProjectionOnBall( event.pageX, event.pageY, _rotateEnd );
@@ -447,9 +441,6 @@ THREE.TrackballControls = function ( object, domElement ) {
   function mouseup( event ) {
 
     if ( _this.enabled === false ) return;
-
-    event.preventDefault();
-    event.stopPropagation();
 
     _state = STATE.NONE;
 
