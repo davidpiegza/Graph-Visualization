@@ -15,7 +15,14 @@
 <html>
   <head>
     <title>Graph Visualization</title>
-    <script type="text/javascript" src="build/graph.min.js"></script>
+    <script type="text/javascript" src="Graph.js"></script>
+    <script type="text/javascript" src="webgl-frameworks/three.min.js"></script>
+    <script type="text/javascript" src="utils/Stats.js"></script>
+    <script type="text/javascript" src="utils/TrackballControls.js"></script>
+    <script type="text/javascript" src="utils/Label.js"></script>
+    <script type="text/javascript" src="utils/ObjectSelection.js"></script>
+    <script type="text/javascript" src="layouts/force-directed-layout.js"></script>
+    <script type="text/javascript" src="drawings/simple_graph.js"></script>
 
     <script type="text/javascript">
       var drawing;
@@ -27,7 +34,7 @@
         /* Change these values to draw more nodes (numNodes) */
         switch(index) {
           case 0:
-            drawing = new Drawing.SimpleGraph({layout: '2d', selection: false, numNodes: 50, showStats: true, showInfo: true});
+            drawing = new Drawing.SimpleGraph({layout: '2d', selection: true, numNodes: 50, showStats: true, showInfo: true});
             break;
           case 1:
             drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, graphLayout:{attraction: 5, repulsion: 0.5}, showStats: true, showInfo: true});
@@ -36,7 +43,7 @@
             drawing = new Drawing.SphereGraph({numNodes: 50, showStats: true, showInfo: true});
             break;
           default:
-              drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true});
+            drawing = new Drawing.SimpleGraph({layout: '3d', selection: true, numNodes: 50, showStats: true, showInfo: true});
         }
         document.getElementById("drawing_select").selectedIndex = index;
       }
