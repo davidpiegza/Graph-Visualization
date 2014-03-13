@@ -24,7 +24,7 @@ The project consists of
 
 ### Graph Structure ###
 
-This is implemented in graph-visualization/Graph.js. 
+This is implemented in graph-visualization/Graph.js.
 
 Usage:
 
@@ -40,8 +40,8 @@ Node:
 A node has the properties
 
   - `ID`
-  - `nodesTo`, Array with connected nodes 
-  - `nodesFrom`, Array with connected nodes 
+  - `nodesTo`, Array with connected nodes
+  - `nodesFrom`, Array with connected nodes
   - `position`, Object for x, y, z position, default is {}
   - `data`, Object with further properties, e.g. properties for a graph layout
 
@@ -56,7 +56,7 @@ A graph layout has the basic structure:
       this.init = function() {
         ...
       };
-      
+
       this.generate = function() {
         ...
       };
@@ -69,3 +69,9 @@ The graph layout gets the created graph and calculates new positions for the nod
 The graph layout may extend the nodes and edges with custom properties in the data object.
 
 See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-based-layout.js) for example usage.
+
+
+Changelog
+-------------------
+
+See [releases](https://github.com/davidpiegza/Graph-Visualization/releases).
