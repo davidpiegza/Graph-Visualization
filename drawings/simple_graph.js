@@ -102,9 +102,9 @@ Drawing.SimpleGraph = function(options) {
 
     // Node geometry
     if(that.layout === "3d") {
-      geometry = new THREE.CubeGeometry( 25, 25, 25 );
+      geometry = new THREE.BoxGeometry( 25, 25, 25 );
     } else {
-      geometry = new THREE.CubeGeometry( 50, 50, 0 );
+      geometry = new THREE.BoxGeometry( 50, 50, 0 );
     }
 
     // Create node selection, if set
@@ -232,7 +232,7 @@ Drawing.SimpleGraph = function(options) {
       tmp_geo.vertices.push(source.data.draw_object.position);
       tmp_geo.vertices.push(target.data.draw_object.position);
 
-      line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
+      line = new THREE.LineSegments( tmp_geo, material );
       line.scale.x = line.scale.y = line.scale.z = 1;
       line.originalScale = 1;
 

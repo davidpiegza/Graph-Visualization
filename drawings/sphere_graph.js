@@ -250,7 +250,7 @@ Drawing.SphereGraph = function(options) {
     tmp_geo.vertices.push(source.data.draw_object.position);
     tmp_geo.vertices.push(target.data.draw_object.position);
 
-    line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
+    line = new THREE.LineSegments( tmp_geo, material );
     line.scale.x = line.scale.y = line.scale.z = 1;
     line.originalScale = 1;
 

@@ -37,8 +37,18 @@ THREE.Label = function(text, parameters) {
     xc.textBaseline = 'top';
     xc.fillText(text, 0, 0);
 
-    var geometry = new THREE.CubeGeometry(len, 200, 0);
-    var xm = new THREE.MeshBasicMaterial({map: new THREE.Texture(labelCanvas), transparent: true});
+    var geometry = new THREE.BoxGeometry(len, 200, 0);
+    var xm = new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(
+        labelCanvas,
+        THREE.UVMapping,
+        THREE.ClampToEdgeWrapping,
+        THREE.ClampToEdgeWrapping,
+        THREE.LinearFilter,
+        THREE.LinearFilter
+      ),
+      transparent: true
+    });
     xm.map.needsUpdate = true;
 
     // set text canvas to cube geometry
