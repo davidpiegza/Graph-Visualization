@@ -236,6 +236,10 @@ Drawing.SimpleGraph = function(options) {
       line.scale.x = line.scale.y = line.scale.z = 1;
       line.originalScale = 1;
 
+      // NOTE: Deactivated frustumCulled, otherwise it will not draw all lines (even though
+      // it looks like the lines are in the view frustum).
+      line.frustumCulled = false;
+
       geometries.push(tmp_geo);
 
       scene.add( line );
