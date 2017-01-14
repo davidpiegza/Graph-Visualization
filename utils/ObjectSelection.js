@@ -16,7 +16,6 @@ THREE.ObjectSelection = function(parameters) {
   var parameters = parameters || {};
 
   this.domElement = parameters.domElement || document;
-  this.projector = new THREE.Projector();
   this.INTERSECTED;
 
   var _this = this;
@@ -42,7 +41,7 @@ THREE.ObjectSelection = function(parameters) {
 
   this.render = function(scene, camera) {
     var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-    this.projector.unprojectVector( vector, camera );
+    vector.unproject(camera);
 
     var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 

@@ -76,8 +76,10 @@ Drawing.SimpleGraph = function(options) {
 
   function init() {
     // Three.js initialization
-    renderer = new THREE.WebGLRenderer({alpha: true});
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
 
     camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 1, 1000000);
     camera.position.z = 5000;
@@ -102,9 +104,9 @@ Drawing.SimpleGraph = function(options) {
 
     // Node geometry
     if(that.layout === "3d") {
-      geometry = new THREE.CubeGeometry( 25, 25, 25 );
+      geometry = new THREE.BoxGeometry( 25, 25, 25 );
     } else {
-      geometry = new THREE.CubeGeometry( 50, 50, 0 );
+      geometry = new THREE.BoxGeometry( 50, 50, 0 );
     }
 
     // Create node selection, if set
@@ -226,15 +228,19 @@ Drawing.SimpleGraph = function(options) {
    *  Create an edge object (line) and add it to the scene.
    */
   function drawEdge(source, target) {
-      material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 0.5 });
+      material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 1 });
 
       var tmp_geo = new THREE.Geometry();
       tmp_geo.vertices.push(source.data.draw_object.position);
       tmp_geo.vertices.push(target.data.draw_object.position);
 
-      line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
+      line = new THREE.LineSegments( tmp_geo, material );
       line.scale.x = line.scale.y = line.scale.z = 1;
       line.originalScale = 1;
+
+      // NOTE: Deactivated frustumCulled, otherwise it will not draw all lines (even though
+      // it looks like the lines are in the view frustum).
+      line.frustumCulled = false;
 
       geometries.push(tmp_geo);
 
