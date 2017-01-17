@@ -1,20 +1,18 @@
-Graph-Visualization
-===================
+# Graph-Visualization
 
 This project is about 3D graph visualization with WebGL. The aim of this project is to evaluate the possibilities of graph drawing in WebGL.
 
 This project uses Three.js for drawing and currently supports a force directed layout.
 
 
-### Run the example ###
+### Run the example
 
 1. Clone or download the project
 2. Open the index_sample.html in a WebGL-compatible browser
 
 You may copy the index_sample.html to index.html and customize it.
 
-Project Description
--------------------
+## Project Description
 
 The project consists of
 
@@ -22,7 +20,7 @@ The project consists of
   - a graph layout implementation
   - and a graph drawing implementation
 
-### Graph Structure ###
+### Graph Structure
 
 This is implemented in graph-visualization/Graph.js.
 
@@ -47,7 +45,7 @@ A node has the properties
 
 For more details have a look at the [source code](https://github.com/davidpiegza/Graph-Visualization/blob/master/Graph.js).
 
-### Graph Layout ###
+### Graph Layout
 
 A graph layout has the basic structure:
 
@@ -71,7 +69,20 @@ The graph layout may extend the nodes and edges with custom properties in the da
 See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-based-layout.js) for example usage.
 
 
-Changelog
--------------------
+## Contribution
+
+This project uses [Grunt](http://gruntjs.com/) to run several tasks in development. You should have `npm` and `grunt` installed. To install `grunt` run
+
+    npm install -g grunt-cli
+
+And to install all dependencies run
+
+    npm install
+
+For more info check the [Grunt - Getting started guide](http://gruntjs.com/getting-started).
+
+If you added some changes, run `grunt` to check the code.
+
+## Changelog
 
 See [releases](https://github.com/davidpiegza/Graph-Visualization/releases).
