@@ -53,7 +53,7 @@ function Graph(options) {
   this.nodeSet = {};
   this.nodes = [];
   this.edges = [];
-  this.layout = null;
+  this.layout = undefined;
 }
 
 Graph.prototype.addNode = function(node) {
