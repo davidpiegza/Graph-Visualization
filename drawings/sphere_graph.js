@@ -50,7 +50,7 @@
 var Drawing = Drawing || {};
 
 Drawing.SphereGraph = function(options) {
-  var options = options || {};
+  options = options || {};
 
   this.layout = options.layout || "2d";
   this.show_stats = options.showStats || false;
@@ -93,7 +93,7 @@ Drawing.SphereGraph = function(options) {
     controls.zoomSpeed = 5.2;
     controls.panSpeed = 1;
 
-    controls.noZoom = false
+    controls.noZoom = false;
     controls.noPan = false;
 
     controls.staticMoving = false;
@@ -120,7 +120,7 @@ Drawing.SphereGraph = function(options) {
         domElement: renderer.domElement,
         selected: function(obj) {
           // display info
-          if(obj != null) {
+          if(obj !== null) {
             info_text.select = "Object " + obj.id;
           } else {
             delete info_text.select;
@@ -164,8 +164,8 @@ Drawing.SphereGraph = function(options) {
     nodes.push(node);
 
     var steps = 1;
-    while(nodes.length != 0 && steps < that.nodes_count) {
-      var node = nodes.shift();
+    while(nodes.length !== 0 && steps < that.nodes_count) {
+      node = nodes.shift();
 
       var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
@@ -229,7 +229,7 @@ Drawing.SphereGraph = function(options) {
 
     draw_object.id = node.id;
     node.data.draw_object = draw_object;
-    node.layout = {}
+    node.layout = {};
     node.layout.max_X = 90;
     node.layout.min_X = -90;
     node.layout.max_Y = 180;
@@ -271,6 +271,8 @@ Drawing.SphereGraph = function(options) {
 
 
   function render() {
+    var i;
+
     // Generate layout if not finished
     if(!graph.layout.finished) {
       info_text.calc = "<span style='color: red'>Calculating layout...</span>";
@@ -280,12 +282,12 @@ Drawing.SphereGraph = function(options) {
     }
 
     // Update position of lines (edges)
-    for(var i=0; i<geometries.length; i++) {
+    for(i=0; i<geometries.length; i++) {
       geometries[i].verticesNeedUpdate = true;
     }
 
     // set lookat of nodes to camera
-    for(var i=0; i<graph.nodes.length; i++) {
+    for(i=0; i<graph.nodes.length; i++) {
       graph.nodes[i].data.draw_object.lookAt(camera.position);
     }
 
@@ -310,7 +312,7 @@ Drawing.SphereGraph = function(options) {
   function printInfo(text) {
     var str = '';
     for(var index in info_text) {
-      if(str != '' && info_text[index] != '') {
+      if(str !== '' && info_text[index] !== '') {
         str += " - ";
       }
       str += info_text[index];
@@ -327,5 +329,5 @@ Drawing.SphereGraph = function(options) {
   // Stop layout calculation
   this.stop_calculating = function() {
     graph.layout.stop_calculating();
-  }
-}
+  };
+};

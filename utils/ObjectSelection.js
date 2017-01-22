@@ -13,10 +13,10 @@
  */
 
 THREE.ObjectSelection = function(parameters) {
-  var parameters = parameters || {};
+  parameters = parameters || {};
 
   this.domElement = parameters.domElement || document;
-  this.INTERSECTED;
+  this.INTERSECTED = null;
 
   var _this = this;
 
@@ -69,5 +69,5 @@ THREE.ObjectSelection = function(parameters) {
         callbackSelected(this.INTERSECTED);
       }
     }
-  }
-}
+  };
+};

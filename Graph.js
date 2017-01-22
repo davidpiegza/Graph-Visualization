@@ -21,16 +21,16 @@
 
   Edges:
   Connects to nodes together.
-  
+
   Example:
   edge = new Edge(node1, node2);
 
   An edge can also be extended with the data attribute. E.g. set a
-  type like "friends", different types can then be draw in differnt ways. 
+  type like "friends", different types can then be draw in differnt ways.
 
 
   Graph:
-  
+
   Parameters:
   options = {
     limit: <int>, maximum number of nodes
@@ -43,7 +43,7 @@
   addEdge(node1, node2) - adds an edge for node1 and node2. Returns true if the
                           edge has been added, otherwise false (e.g.) when the
                           edge between these nodes already exist.
-  
+
   reached_limit() - returns true if the limit has been reached, otherwise false
 
  */
@@ -53,11 +53,11 @@ function Graph(options) {
   this.nodeSet = {};
   this.nodes = [];
   this.edges = [];
-  this.layout;
+  this.layout = undefined;
 }
 
 Graph.prototype.addNode = function(node) {
-  if(this.nodeSet[node.id] == undefined && !this.reached_limit()) {
+  if(this.nodeSet[node.id] === undefined && !this.reached_limit()) {
     this.nodeSet[node.id] = node;
     this.nodes.push(node);
     return true;
@@ -79,7 +79,7 @@ Graph.prototype.addEdge = function(source, target) {
 };
 
 Graph.prototype.reached_limit = function() {
-  if(this.options.limit != undefined)
+  if(this.options.limit !== undefined)
     return this.options.limit <= this.nodes.length;
   else
     return false;

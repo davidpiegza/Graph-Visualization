@@ -49,7 +49,7 @@
 var Drawing = Drawing || {};
 
 Drawing.SimpleGraph = function(options) {
-  var options = options || {};
+  options = options || {};
 
   this.layout = options.layout || "2d";
   this.layout_options = options.graphLayout || {};
@@ -115,7 +115,7 @@ Drawing.SimpleGraph = function(options) {
         domElement: renderer.domElement,
         selected: function(obj) {
           // display info
-          if(obj != null) {
+          if(obj !== null) {
             info_text.select = "Object " + obj.id;
           } else {
             delete info_text.select;
@@ -163,8 +163,8 @@ Drawing.SimpleGraph = function(options) {
     nodes.push(node);
 
     var steps = 1;
-    while(nodes.length != 0 && steps < that.nodes_count) {
-      var node = nodes.shift();
+    while(nodes.length !== 0 && steps < that.nodes_count) {
+      node = nodes.shift();
 
       var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
@@ -198,12 +198,13 @@ Drawing.SimpleGraph = function(options) {
    */
   function drawNode(node) {
     var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ) );
+    var label_object;
 
     if(that.show_labels) {
-      if(node.data.title != undefined) {
-        var label_object = new THREE.Label(node.data.title);
+      if(node.data.title !== undefined) {
+        label_object = new THREE.Label(node.data.title);
       } else {
-        var label_object = new THREE.Label(node.id);
+        label_object = new THREE.Label(node.id);
       }
       node.data.label_object = label_object;
       scene.add( node.data.label_object );
@@ -259,6 +260,8 @@ Drawing.SimpleGraph = function(options) {
 
 
   function render() {
+    var i, length, node;
+
     // Generate layout if not finished
     if(!graph.layout.finished) {
       info_text.calc = "<span style='color: red'>Calculating layout...</span>";
@@ -268,7 +271,7 @@ Drawing.SimpleGraph = function(options) {
     }
 
     // Update position of lines (edges)
-    for(var i=0; i<geometries.length; i++) {
+    for(i=0; i<geometries.length; i++) {
       geometries[i].verticesNeedUpdate = true;
     }
 
@@ -276,29 +279,30 @@ Drawing.SimpleGraph = function(options) {
     // Show labels if set
     // It creates the labels when this options is set during visualization
     if(that.show_labels) {
-      var length = graph.nodes.length;
-      for(var i=0; i<length; i++) {
-        var node = graph.nodes[i];
-        if(node.data.label_object != undefined) {
+      length = graph.nodes.length;
+      for(i=0; i<length; i++) {
+        node = graph.nodes[i];
+        if(node.data.label_object !== undefined) {
           node.data.label_object.position.x = node.data.draw_object.position.x;
           node.data.label_object.position.y = node.data.draw_object.position.y - 100;
           node.data.label_object.position.z = node.data.draw_object.position.z;
           node.data.label_object.lookAt(camera.position);
         } else {
-          if(node.data.title != undefined) {
-            var label_object = new THREE.Label(node.data.title, node.data.draw_object);
+          var label_object;
+          if(node.data.title !== undefined) {
+            label_object = new THREE.Label(node.data.title, node.data.draw_object);
           } else {
-            var label_object = new THREE.Label(node.id, node.data.draw_object);
+            label_object = new THREE.Label(node.id, node.data.draw_object);
           }
           node.data.label_object = label_object;
           scene.add( node.data.label_object );
         }
       }
     } else {
-      var length = graph.nodes.length;
-      for(var i=0; i<length; i++) {
-        var node = graph.nodes[i];
-        if(node.data.label_object != undefined) {
+      length = graph.nodes.length;
+      for(i=0; i<length; i++) {
+        node = graph.nodes[i];
+        if(node.data.label_object !== undefined) {
           scene.remove( node.data.label_object );
           node.data.label_object = undefined;
         }
@@ -325,7 +329,7 @@ Drawing.SimpleGraph = function(options) {
   function printInfo(text) {
     var str = '';
     for(var index in info_text) {
-      if(str != '' && info_text[index] != '') {
+      if(str !== '' && info_text[index] !== '') {
         str += " - ";
       }
       str += info_text[index];
@@ -341,5 +345,5 @@ Drawing.SimpleGraph = function(options) {
   // Stop layout calculation
   this.stop_calculating = function() {
     graph.layout.stop_calculating();
-  }
-}
+  };
+};

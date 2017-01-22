@@ -19,15 +19,15 @@
 
     positionUpdated: <function>, called when the position of the node has been updated
   }
-  
+
   Examples:
-  
+
   create:
   layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, layout: "3d"});
-  
+
   call init when graph is loaded (and for reset or when new nodes has been added to the graph):
   layout.init();
-  
+
   call generate in a render method, returns true if it's still calculating and false if it's finished
   layout.generate();
 
@@ -39,8 +39,8 @@
 var Layout = Layout || {};
 
 Layout.ForceDirected = function(graph, options) {
-  var options = options || {};
-  
+  options = options || {};
+
   this.layout = options.layout || "2d";
   this.attraction_multiplier = options.attraction || 5;
   this.repulsion_multiplier = options.repulsion || 0.75;
@@ -51,7 +51,7 @@ Layout.ForceDirected = function(graph, options) {
   this.finished = false;
 
   var callback_positionUpdated = options.positionUpdated;
-  
+
   var EPSILON = 0.000001;
   var attraction_constant;
   var repulsion_constant;
@@ -61,7 +61,7 @@ Layout.ForceDirected = function(graph, options) {
   var nodes_length;
   var edges_length;
   var that = this;
-  
+
   // performance test
   var mean_time = 0;
 
@@ -87,12 +87,15 @@ Layout.ForceDirected = function(graph, options) {
   this.generate = function() {
     if(layout_iterations < this.max_iterations && temperature > 0.000001) {
       var start = new Date().getTime();
-      
+      var i;
+
+      var delta_x, delta_y, delta_z, delta_length, delta_length_z, force, force_z;
+
       // calculate repulsion
-      for(var i=0; i < nodes_length; i++) {
+      for(i=0; i < nodes_length; i++) {
         var node_v = graph.nodes[i];
         node_v.layout = node_v.layout || {};
-        if(i==0) {
+        if(i === 0) {
           node_v.layout.offset_x = 0;
           node_v.layout.offset_y = 0;
           if(this.layout === "3d") {
@@ -103,7 +106,7 @@ Layout.ForceDirected = function(graph, options) {
         node_v.layout.force = 0;
         node_v.layout.tmp_pos_x = node_v.layout.tmp_pos_x || node_v.position.x;
         node_v.layout.tmp_pos_y = node_v.layout.tmp_pos_y || node_v.position.y;
-        if(this.layout === "3d") {    
+        if(this.layout === "3d") {
           node_v.layout.tmp_pos_z = node_v.layout.tmp_pos_z || node_v.position.z;
         }
 
@@ -117,20 +120,22 @@ Layout.ForceDirected = function(graph, options) {
               node_u.layout.tmp_pos_z = node_u.layout.tmp_pos_z || node_u.position.z;
             }
 
-            var delta_x = node_v.layout.tmp_pos_x - node_u.layout.tmp_pos_x;
-            var delta_y = node_v.layout.tmp_pos_y - node_u.layout.tmp_pos_y;
+            delta_x = node_v.layout.tmp_pos_x - node_u.layout.tmp_pos_x;
+            delta_y = node_v.layout.tmp_pos_y - node_u.layout.tmp_pos_y;
+
             if(this.layout === "3d") {
-              var delta_z = node_v.layout.tmp_pos_z - node_u.layout.tmp_pos_z;
+              delta_z = node_v.layout.tmp_pos_z - node_u.layout.tmp_pos_z;
             }
 
-            var delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
+            delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
             if(this.layout === "3d") {
-              var delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
+              delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
             }
 
-            var force = (repulsion_constant * repulsion_constant) / delta_length;
+            force = (repulsion_constant * repulsion_constant) / delta_length;
+
             if(this.layout === "3d") {
-              var force_z = (repulsion_constant * repulsion_constant) / delta_length_z;
+              force_z = (repulsion_constant * repulsion_constant) / delta_length_z;
             }
 
             node_v.layout.force += force;
@@ -139,7 +144,7 @@ Layout.ForceDirected = function(graph, options) {
             node_v.layout.offset_x += (delta_x / delta_length) * force;
             node_v.layout.offset_y += (delta_y / delta_length) * force;
 
-            if(i==0) {
+            if(i === 0) {
               node_u.layout.offset_x = 0;
               node_u.layout.offset_y = 0;
               if(this.layout === "3d") {
@@ -156,23 +161,24 @@ Layout.ForceDirected = function(graph, options) {
           }
         }
       }
-      
-      // calculate attraction
-      for(var i=0; i < edges_length; i++) {
-        var edge = graph.edges[i];
-        var delta_x = edge.source.layout.tmp_pos_x - edge.target.layout.tmp_pos_x;
-        var delta_y = edge.source.layout.tmp_pos_y - edge.target.layout.tmp_pos_y;
-        if(this.layout === "3d") {
-          var delta_z = edge.source.layout.tmp_pos_z - edge.target.layout.tmp_pos_z;
-        }  
 
-        var delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
+      // calculate attraction
+      for(i=0; i < edges_length; i++) {
+        var edge = graph.edges[i];
+        delta_x = edge.source.layout.tmp_pos_x - edge.target.layout.tmp_pos_x;
+        delta_y = edge.source.layout.tmp_pos_y - edge.target.layout.tmp_pos_y;
         if(this.layout === "3d") {
-          var delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
+          delta_z = edge.source.layout.tmp_pos_z - edge.target.layout.tmp_pos_z;
         }
-        var force = (delta_length * delta_length) / attraction_constant;
+
+        delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
         if(this.layout === "3d") {
-          var force_z = (delta_length_z * delta_length_z) / attraction_constant;
+          delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
+        }
+
+        force = (delta_length * delta_length) / attraction_constant;
+        if(this.layout === "3d") {
+          force_z = (delta_length_z * delta_length_z) / attraction_constant;
         }
 
         edge.source.layout.force -= force;
@@ -180,28 +186,29 @@ Layout.ForceDirected = function(graph, options) {
 
         edge.source.layout.offset_x -= (delta_x / delta_length) * force;
         edge.source.layout.offset_y -= (delta_y / delta_length) * force;
-        if(this.layout === "3d") {    
+        if(this.layout === "3d") {
           edge.source.layout.offset_z -= (delta_z / delta_length_z) * force_z;
         }
 
         edge.target.layout.offset_x += (delta_x / delta_length) * force;
         edge.target.layout.offset_y += (delta_y / delta_length) * force;
-        if(this.layout === "3d") {    
-          edge.target.layout.offset_z += (delta_z / delta_length_z) * force_z;
-        }        
-      }
-      
-      // calculate positions
-      for(var i=0; i < nodes_length; i++) {
-        var node = graph.nodes[i];
-        var delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x + node.layout.offset_y * node.layout.offset_y));
         if(this.layout === "3d") {
-          var delta_length_z = Math.max(EPSILON, Math.sqrt(node.layout.offset_z * node.layout.offset_z + node.layout.offset_y * node.layout.offset_y));
+          edge.target.layout.offset_z += (delta_z / delta_length_z) * force_z;
+        }
+      }
+
+      // calculate positions
+      for(i=0; i < nodes_length; i++) {
+        var node = graph.nodes[i];
+        delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x + node.layout.offset_y * node.layout.offset_y));
+
+        if(this.layout === "3d") {
+          delta_length_z = Math.max(EPSILON, Math.sqrt(node.layout.offset_z * node.layout.offset_z + node.layout.offset_y * node.layout.offset_y));
         }
 
         node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
         node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
-        if(this.layout === "3d") {    
+        if(this.layout === "3d") {
           node.layout.tmp_pos_z += (node.layout.offset_z / delta_length_z) * Math.min(delta_length_z, temperature);
         }
 
@@ -209,10 +216,10 @@ Layout.ForceDirected = function(graph, options) {
         node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
           node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
 
-        if(this.layout === "3d") {    
+        if(this.layout === "3d") {
           node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
         }
-        
+
         // execute callback function if positions has been updated
         if(updated && typeof callback_positionUpdated === 'function') {
           callback_positionUpdated(node);
@@ -224,7 +231,7 @@ Layout.ForceDirected = function(graph, options) {
       var end = new Date().getTime();
       mean_time += end - start;
     } else {
-      if(!this.finished) {        
+      if(!this.finished) {
         console.log("Average time: " + (mean_time/layout_iterations) + " ms");
       }
       this.finished = true;
@@ -238,5 +245,5 @@ Layout.ForceDirected = function(graph, options) {
    */
   this.stop_calculating = function() {
     layout_iterations = this.max_iterations;
-  }
+  };
 };
