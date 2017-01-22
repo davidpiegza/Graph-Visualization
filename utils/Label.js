@@ -17,7 +17,7 @@
  */
 
 THREE.Label = function(text, parameters) {
-  var parameters = parameters || {};
+  parameters = parameters || {};
 
   var labelCanvas = document.createElement( "canvas" );
 
@@ -57,4 +57,4 @@ THREE.Label = function(text, parameters) {
   }
 
   return create();
-}
+};
