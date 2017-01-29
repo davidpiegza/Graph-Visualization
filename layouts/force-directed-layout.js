@@ -1,11 +1,13 @@
 /**
-  @author David Piegza
+  @author David Piegza (@davidpiegza)
+  @author Timofey Rechkalov (@TRechkalov)
 
   Implements a force-directed layout, the algorithm is based on Fruchterman and Reingold and
   the JUNG implementation.
 
-  Needs the graph data structure Graph.js:
+  Needs the graph data structure Graph.js and the Vector3 object:
   https://github.com/davidpiegza/Graph-Visualization/blob/master/Graph.js
+  https://github.com/davidpiegza/Graph-Visualization/blob/master/utils/Vector3.js
 
   Parameters:
   graph - data structure
@@ -87,77 +89,41 @@ Layout.ForceDirected = function(graph, options) {
   this.generate = function() {
     if(layout_iterations < this.max_iterations && temperature > 0.000001) {
       var start = new Date().getTime();
-      var i;
-
-      var delta_x, delta_y, delta_z, delta_length, delta_length_z, force, force_z;
+      var i, j, delta, delta_length, force, change;
 
       // calculate repulsion
       for(i=0; i < nodes_length; i++) {
         var node_v = graph.nodes[i];
         node_v.layout = node_v.layout || {};
         if(i === 0) {
-          node_v.layout.offset_x = 0;
-          node_v.layout.offset_y = 0;
-          if(this.layout === "3d") {
-            node_v.layout.offset_z = 0;
-          }
+          node_v.layout.offset = new Vector3();
         }
 
         node_v.layout.force = 0;
-        node_v.layout.tmp_pos_x = node_v.layout.tmp_pos_x || node_v.position.x;
-        node_v.layout.tmp_pos_y = node_v.layout.tmp_pos_y || node_v.position.y;
-        if(this.layout === "3d") {
-          node_v.layout.tmp_pos_z = node_v.layout.tmp_pos_z || node_v.position.z;
-        }
+        node_v.layout.tmp_pos = node_v.layout.tmp_pos || new Vector3().setVector(node_v.position);
 
-        for(var j=i+1; j < nodes_length; j++) {
+        for(j=i+1; j < nodes_length; j++) {
           var node_u = graph.nodes[j];
           if(i != j) {
             node_u.layout = node_u.layout || {};
-            node_u.layout.tmp_pos_x = node_u.layout.tmp_pos_x || node_u.position.x;
-            node_u.layout.tmp_pos_y = node_u.layout.tmp_pos_y || node_u.position.y;
-            if(this.layout === "3d") {
-              node_u.layout.tmp_pos_z = node_u.layout.tmp_pos_z || node_u.position.z;
-            }
 
-            delta_x = node_v.layout.tmp_pos_x - node_u.layout.tmp_pos_x;
-            delta_y = node_v.layout.tmp_pos_y - node_u.layout.tmp_pos_y;
+            node_u.layout.tmp_pos = node_u.layout.tmp_pos || new Vector3().setVector(node_u.position);
 
-            if(this.layout === "3d") {
-              delta_z = node_v.layout.tmp_pos_z - node_u.layout.tmp_pos_z;
-            }
-
-            delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
-            if(this.layout === "3d") {
-              delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
-            }
+            delta = node_v.layout.tmp_pos.clone().sub(node_u.layout.tmp_pos);
+            delta_length = Math.max(EPSILON, Math.sqrt(delta.clone().multiply(delta).sum()));
 
             force = (repulsion_constant * repulsion_constant) / delta_length;
-
-            if(this.layout === "3d") {
-              force_z = (repulsion_constant * repulsion_constant) / delta_length_z;
-            }
 
             node_v.layout.force += force;
             node_u.layout.force += force;
 
-            node_v.layout.offset_x += (delta_x / delta_length) * force;
-            node_v.layout.offset_y += (delta_y / delta_length) * force;
-
             if(i === 0) {
-              node_u.layout.offset_x = 0;
-              node_u.layout.offset_y = 0;
-              if(this.layout === "3d") {
-                node_u.layout.offset_z = 0;
-              }
+              node_u.layout.offset = new Vector3();
             }
-            node_u.layout.offset_x -= (delta_x / delta_length) * force;
-            node_u.layout.offset_y -= (delta_y / delta_length) * force;
 
-            if(this.layout === "3d") {
-              node_v.layout.offset_z += (delta_z / delta_length_z) * force_z;
-              node_u.layout.offset_z -= (delta_z / delta_length_z) * force_z;
-            }
+            change = delta.clone().multiply(new Vector3().setScalar(force/delta_length));
+            node_v.layout.offset.add(change);
+            node_u.layout.offset.sub(change);
           }
         }
       }
@@ -165,62 +131,40 @@ Layout.ForceDirected = function(graph, options) {
       // calculate attraction
       for(i=0; i < edges_length; i++) {
         var edge = graph.edges[i];
-        delta_x = edge.source.layout.tmp_pos_x - edge.target.layout.tmp_pos_x;
-        delta_y = edge.source.layout.tmp_pos_y - edge.target.layout.tmp_pos_y;
-        if(this.layout === "3d") {
-          delta_z = edge.source.layout.tmp_pos_z - edge.target.layout.tmp_pos_z;
-        }
-
-        delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
-        if(this.layout === "3d") {
-          delta_length_z = Math.max(EPSILON, Math.sqrt((delta_z * delta_z) + (delta_y * delta_y)));
-        }
+        delta = edge.source.layout.tmp_pos.clone().sub(edge.target.layout.tmp_pos);
+        delta_length = Math.max(EPSILON, Math.sqrt(delta.clone().multiply(delta).sum()));
 
         force = (delta_length * delta_length) / attraction_constant;
-        if(this.layout === "3d") {
-          force_z = (delta_length_z * delta_length_z) / attraction_constant;
-        }
 
         edge.source.layout.force -= force;
         edge.target.layout.force += force;
 
-        edge.source.layout.offset_x -= (delta_x / delta_length) * force;
-        edge.source.layout.offset_y -= (delta_y / delta_length) * force;
-        if(this.layout === "3d") {
-          edge.source.layout.offset_z -= (delta_z / delta_length_z) * force_z;
-        }
-
-        edge.target.layout.offset_x += (delta_x / delta_length) * force;
-        edge.target.layout.offset_y += (delta_y / delta_length) * force;
-        if(this.layout === "3d") {
-          edge.target.layout.offset_z += (delta_z / delta_length_z) * force_z;
-        }
+        change = delta.clone().multiply(new Vector3().setScalar(force/delta_length));
+        edge.target.layout.offset.add(change);
+        edge.source.layout.offset.sub(change);
       }
 
       // calculate positions
       for(i=0; i < nodes_length; i++) {
         var node = graph.nodes[i];
-        delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x + node.layout.offset_y * node.layout.offset_y));
 
-        if(this.layout === "3d") {
-          delta_length_z = Math.max(EPSILON, Math.sqrt(node.layout.offset_z * node.layout.offset_z + node.layout.offset_y * node.layout.offset_y));
-        }
+        delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset.clone().multiply(node.layout.offset).sum()));
 
-        node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
-        node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
-        if(this.layout === "3d") {
-          node.layout.tmp_pos_z += (node.layout.offset_z / delta_length_z) * Math.min(delta_length_z, temperature);
-        }
+        node.layout.tmp_pos.add(node.layout.offset.clone().multiply(new Vector3().setScalar(Math.min(delta_length, temperature) / delta_length)));
 
         var updated = true;
-        node.position.x -=  (node.position.x-node.layout.tmp_pos_x)/10;
-          node.position.y -=  (node.position.y-node.layout.tmp_pos_y)/10;
 
-        if(this.layout === "3d") {
-          node.position.z -=  (node.position.z-node.layout.tmp_pos_z)/10;
+        var tmpPosition = new Vector3(node.position.x, node.position.y, node.position.z);
+        tmpPosition.sub(node.layout.tmp_pos).divide(new Vector3().setScalar(10));
+
+        node.position.x -= tmpPosition.x;
+        node.position.y -= tmpPosition.y;
+
+        if(this.layout === '3d') {
+          node.position.z -= tmpPosition.z;
         }
 
-        // execute callback function if positions has been updated
+        // execute callback function if position has been updated
         if(updated && typeof callback_positionUpdated === 'function') {
           callback_positionUpdated(node);
         }
