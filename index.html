@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Graph Visualization</title>
+
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font: 14px monospace;
+        overflow: hidden;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      h2 {
+        font-size: 16px;
+      }
+
+      a {
+        text-decoration: none;
+        color: #4285C2;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        width: 20%;
+        height: 100%;
+        background-color: #f0f0f0;
+      }
+
+      .sidebar section {
+        padding: 10px 20px;
+      }
+
+      #viewer {
+        position: absolute;
+        left: 20%;
+        width: 79%;
+        height: 100%;
+        overflow: auto;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body onload="loadExample()">
+    <div id="content">
+      <aside class="sidebar">
+        <section>
+          <h1>Graph Visualization</h1>
+        </section>
+
+        <section id="links">
+          <div>
+            <a href="https://github.com/davidpiegza/Graph-Visualization">source code</a>
+          <div>
+
+          <div>
+            <a href="https://github.com/davidpiegza/Graph-Visualization#contribution">contribution</a>
+          </div>
+        </section>
+
+        <section id="examples">
+          <h2>examples</h2>
+
+          <div>
+            <a href="examples/simple_graph/index.html" target="viewer">simple graph</a>
+          </div>
+
+          <div>
+            <a href="examples/sphere_graph/index.html" target="viewer">sphere graph</a>
+          </div>
+        </section>
+      </aside>
+
+      <iframe id="viewer" name="viewer" allowfullscreen allowvr onmousewheel=""></iframe>
+    </div>
+
+    <script>
+      function loadExample() {
+        var viewer = document.getElementById('viewer');
+        viewer.src = 'examples/simple_graph/index.html'
+      }
+    </script>
+  </body>
+</html>

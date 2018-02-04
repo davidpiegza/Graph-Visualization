@@ -1,14 +1,14 @@
 /**
   @author David Piegza
 
-  Implements a simple graph drawing with force-directed placement in 2D and 3D.
+  Implements a sphere graph drawing with force-directed placement.
 
   It uses the force-directed-layout implemented in:
   https://github.com/davidpiegza/Graph-Visualization/blob/master/layouts/force-directed-layout.js
 
   Drawing is done with Three.js: http://github.com/mrdoob/three.js
 
-  To use this drawing, include the graph-min.js file and create a SimpleGraph object:
+  To use this drawing, include the graph-min.js file and create a SphereGraph object:
 
   <!DOCTYPE html>
   <html>
@@ -16,7 +16,7 @@
       <title>Graph Visualization</title>
       <script type="text/javascript" src="path/to/graph-min.js"></script>
     </head>
-    <body onload="new Drawing.SimpleGraph({layout: '3d', showStats: true, showInfo: true})">
+    <body onload="new Drawing.SphereGraph({showStats: true, showInfo: true})">
     </bod>
   </html>
 
@@ -46,16 +46,15 @@
 
  */
 
+
 var Drawing = Drawing || {};
 
-Drawing.SimpleGraph = function(options) {
+Drawing.SphereGraph = function(options) {
   options = options || {};
 
   this.layout = options.layout || "2d";
-  this.layout_options = options.graphLayout || {};
   this.show_stats = options.showStats || false;
   this.show_info = options.showInfo || false;
-  this.show_labels = options.showLabels || false;
   this.selection = options.selection || false;
   this.limit = options.limit || 10;
   this.nodes_count = options.numNodes || 20;
@@ -68,6 +67,12 @@ Drawing.SimpleGraph = function(options) {
 
   var geometries = [];
 
+  var sphere_radius = 4900;
+  var max_X = sphere_radius;
+  var min_X = -sphere_radius;
+  var max_Y = sphere_radius;
+  var min_Y = -sphere_radius;
+
   var that=this;
 
   init();
@@ -76,13 +81,11 @@ Drawing.SimpleGraph = function(options) {
 
   function init() {
     // Three.js initialization
-    renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer = new THREE.WebGLRenderer({alpha: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
-
-    camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 1, 1000000);
-    camera.position.z = 5000;
+    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 100000);
+    camera.position.z = 20000;
 
     controls = new THREE.TrackballControls(camera);
 
@@ -102,12 +105,14 @@ Drawing.SimpleGraph = function(options) {
 
     scene = new THREE.Scene();
 
-    // Node geometry
-    if(that.layout === "3d") {
-      geometry = new THREE.BoxGeometry( 25, 25, 25 );
-    } else {
-      geometry = new THREE.BoxGeometry( 50, 50, 0 );
-    }
+    // Create sphere geometry and add it to the scene
+    var sphere_geometry = new THREE.SphereGeometry(sphere_radius, 110, 100);
+    material = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.8 });
+    mesh = new THREE.Mesh(sphere_geometry, material);
+    scene.add(mesh);
+
+    // Create node geometry (will be used in drawNode())
+    geometry = new THREE.SphereGeometry( 25, 25, 0 );
 
     // Create node selection, if set
     if(that.selection) {
@@ -120,8 +125,6 @@ Drawing.SimpleGraph = function(options) {
           } else {
             delete info_text.select;
           }
-        },
-        clicked: function(obj) {
         }
       });
     }
@@ -153,9 +156,7 @@ Drawing.SimpleGraph = function(options) {
    *  numNodes and numEdges.
    */
   function createGraph() {
-
     var node = new Node(0);
-    node.data.title = "This is node " + node.id;
     graph.addNode(node);
     drawNode(node);
 
@@ -170,8 +171,6 @@ Drawing.SimpleGraph = function(options) {
       for(var i=1; i <= numEdges; i++) {
         var target_node = new Node(i*steps);
         if(graph.addNode(target_node)) {
-          target_node.data.title = "This is node " + target_node.id;
-
           drawNode(target_node);
           nodes.push(target_node);
           if(graph.addEdge(node, target_node)) {
@@ -182,11 +181,33 @@ Drawing.SimpleGraph = function(options) {
       steps++;
     }
 
-    that.layout_options.width = that.layout_options.width || 2000;
-    that.layout_options.height = that.layout_options.height || 2000;
-    that.layout_options.iterations = that.layout_options.iterations || 100000;
-    that.layout_options.layout = that.layout_options.layout || that.layout;
-    graph.layout = new Layout.ForceDirected(graph, that.layout_options);
+    // Transform a lat, lng-position to x,y.
+    graph.layout = new Layout.ForceDirected(graph, {width: 2000, height: 2000, iterations: 1000, positionUpdated: function(node) {
+      max_X = Math.max(max_X, node.position.x);
+      min_X = Math.min(min_X, node.position.x);
+      max_Y = Math.max(max_Y, node.position.y);
+      min_Y = Math.min(min_Y, node.position.y);
+
+      var lat, lng;
+      if(node.position.x < 0) {
+        lat = (-90/min_X) * node.position.x;
+      } else {
+        lat = (90/max_X) * node.position.x;
+      }
+      if(node.position.y < 0) {
+        lng = (-180/min_Y) * node.position.y;
+      } else {
+        lng = (180/max_Y) * node.position.y;
+      }
+
+      var area = 5000;
+      var phi = (90 - lat) * Math.PI / 180;
+      var theta = (180 - lng) * Math.PI / 180;
+      node.data.draw_object.position.x = area * Math.sin(phi) * Math.cos(theta);
+      node.data.draw_object.position.y = area * Math.cos(phi);
+      node.data.draw_object.position.z = area * Math.sin(phi) * Math.sin(theta);
+
+    }});
     graph.layout.init();
     info_text.nodes = "Nodes " + graph.nodes.length;
     info_text.edges = "Edges " + graph.edges.length;
@@ -197,30 +218,24 @@ Drawing.SimpleGraph = function(options) {
    *  Create a node object and add it to the scene.
    */
   function drawNode(node) {
-    var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ) );
-    var label_object;
+    var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff } ) );
 
-    if(that.show_labels) {
-      if(node.data.title !== undefined) {
-        label_object = new THREE.Label(node.data.title);
-      } else {
-        label_object = new THREE.Label(node.id);
-      }
-      node.data.label_object = label_object;
-      scene.add( node.data.label_object );
-    }
-
-    var area = 5000;
+    var area = 2000;
     draw_object.position.x = Math.floor(Math.random() * (area + area + 1) - area);
     draw_object.position.y = Math.floor(Math.random() * (area + area + 1) - area);
 
-    if(that.layout === "3d") {
-      draw_object.position.z = Math.floor(Math.random() * (area + area + 1) - area);
-    }
+    node.position.x = Math.floor(Math.random() * (area + area + 1) - area);
+    node.position.y = Math.floor(Math.random() * (area + area + 1) - area);
 
     draw_object.id = node.id;
     node.data.draw_object = draw_object;
-    node.position = draw_object.position;
+    node.layout = {};
+    node.layout.max_X = 90;
+    node.layout.min_X = -90;
+    node.layout.max_Y = 180;
+    node.layout.min_Y = -180;
+
+    // node.position = draw_object.position;
     scene.add( node.data.draw_object );
   }
 
@@ -229,23 +244,19 @@ Drawing.SimpleGraph = function(options) {
    *  Create an edge object (line) and add it to the scene.
    */
   function drawEdge(source, target) {
-      material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 1 });
+    material = new THREE.LineBasicMaterial( { color: 0xCCCCCC, opacity: 0.5, linewidth: 0.5 } );
+    var tmp_geo = new THREE.Geometry();
 
-      var tmp_geo = new THREE.Geometry();
-      tmp_geo.vertices.push(source.data.draw_object.position);
-      tmp_geo.vertices.push(target.data.draw_object.position);
+    tmp_geo.vertices.push(source.data.draw_object.position);
+    tmp_geo.vertices.push(target.data.draw_object.position);
 
-      line = new THREE.LineSegments( tmp_geo, material );
-      line.scale.x = line.scale.y = line.scale.z = 1;
-      line.originalScale = 1;
+    line = new THREE.LineSegments( tmp_geo, material );
+    line.scale.x = line.scale.y = line.scale.z = 1;
+    line.originalScale = 1;
 
-      // NOTE: Deactivated frustumCulled, otherwise it will not draw all lines (even though
-      // it looks like the lines are in the view frustum).
-      line.frustumCulled = false;
+    geometries.push(tmp_geo);
 
-      geometries.push(tmp_geo);
-
-      scene.add( line );
+    scene.add( line );
   }
 
 
@@ -260,7 +271,7 @@ Drawing.SimpleGraph = function(options) {
 
 
   function render() {
-    var i, length, node;
+    var i;
 
     // Generate layout if not finished
     if(!graph.layout.finished) {
@@ -275,38 +286,9 @@ Drawing.SimpleGraph = function(options) {
       geometries[i].verticesNeedUpdate = true;
     }
 
-
-    // Show labels if set
-    // It creates the labels when this options is set during visualization
-    if(that.show_labels) {
-      length = graph.nodes.length;
-      for(i=0; i<length; i++) {
-        node = graph.nodes[i];
-        if(node.data.label_object !== undefined) {
-          node.data.label_object.position.x = node.data.draw_object.position.x;
-          node.data.label_object.position.y = node.data.draw_object.position.y - 100;
-          node.data.label_object.position.z = node.data.draw_object.position.z;
-          node.data.label_object.lookAt(camera.position);
-        } else {
-          var label_object;
-          if(node.data.title !== undefined) {
-            label_object = new THREE.Label(node.data.title, node.data.draw_object);
-          } else {
-            label_object = new THREE.Label(node.id, node.data.draw_object);
-          }
-          node.data.label_object = label_object;
-          scene.add( node.data.label_object );
-        }
-      }
-    } else {
-      length = graph.nodes.length;
-      for(i=0; i<length; i++) {
-        node = graph.nodes[i];
-        if(node.data.label_object !== undefined) {
-          scene.remove( node.data.label_object );
-          node.data.label_object = undefined;
-        }
-      }
+    // set lookat of nodes to camera
+    for(i=0; i<graph.nodes.length; i++) {
+      graph.nodes[i].data.draw_object.lookAt(camera.position);
     }
 
     // render selection
@@ -323,6 +305,7 @@ Drawing.SimpleGraph = function(options) {
     renderer.render( scene, camera );
   }
 
+
   /**
    *  Prints info from the attribute info_text.
    */
@@ -336,6 +319,7 @@ Drawing.SimpleGraph = function(options) {
     }
     document.getElementById("graph-info").innerHTML = str;
   }
+
 
   // Generate random number
   function randomFromTo(from, to) {
