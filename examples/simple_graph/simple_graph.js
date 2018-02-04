@@ -104,7 +104,7 @@ Drawing.SimpleGraph = function(options) {
 
     // Node geometry
     if(that.layout === "3d") {
-      geometry = new THREE.BoxGeometry( 25, 25, 25 );
+      geometry = new THREE.SphereGeometry(30);
     } else {
       geometry = new THREE.BoxGeometry( 50, 50, 0 );
     }
@@ -197,7 +197,7 @@ Drawing.SimpleGraph = function(options) {
    *  Create a node object and add it to the scene.
    */
   function drawNode(node) {
-    var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xffffff, opacity: 0.5 } ) );
+    var draw_object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {  color: Math.random() * 0xe0e0e0, opacity: 0.8 } ) );
     var label_object;
 
     if(that.show_labels) {
@@ -229,7 +229,7 @@ Drawing.SimpleGraph = function(options) {
    *  Create an edge object (line) and add it to the scene.
    */
   function drawEdge(source, target) {
-      material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 1 });
+      material = new THREE.LineBasicMaterial({ color: 0x606060 });
 
       var tmp_geo = new THREE.Geometry();
       tmp_geo.vertices.push(source.data.draw_object.position);
