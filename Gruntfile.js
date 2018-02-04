@@ -2,7 +2,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     jshint: {
-      all: ['Gruntfile.js', 'Graph.js', 'drawings/*.js', 'layouts/*.js', 'utils/Label.js', 'utils/ObjectSelection.js']
+      all: ['Gruntfile.js', 'src/graph.js', 'src/layouts/*.js', 'src/utils/Label.js', 'src/utils/ObjectSelection.js']
     },
     uglify: {
       options: {
@@ -10,7 +10,7 @@ module.exports = function(grunt) {
       },
       graphVisualization: {
         files: {
-          'build/graph.min.js': ['Graph.js', 'webgl-frameworks/three.min.js', 'utils/*.js', 'layouts/*.js', 'drawings/*.js']
+          'build/graph.min.js': ['webgl-frameworks/three.min.js', 'src/graph.js', 'src/utils/*.js', 'src/layouts/*.js']
         }
       }
     }
