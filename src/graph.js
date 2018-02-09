@@ -10,7 +10,7 @@
   id, position and data.
 
   Example:
-  node = new Node(1);
+  node = new GRAPHVIS.Node(1);
   node.position.x = 100;
   node.position.y = 100;
   node.data.title = "Title of the node";
@@ -23,7 +23,7 @@
   Connects to nodes together.
 
   Example:
-  edge = new Edge(node1, node2);
+  edge = new GRAPHVIS.Edge(node1, node2);
 
   An edge can also be extended with the data attribute. E.g. set a
   type like "friends", different types can then be draw in differnt ways.
@@ -48,15 +48,17 @@
 
  */
 
-function Graph(options) {
+var GRAPHVIS = GRAPHVIS || {};
+
+GRAPHVIS.Graph = function(options) {
   this.options = options || {};
   this.nodeSet = {};
   this.nodes = [];
   this.edges = [];
   this.layout = undefined;
-}
+};
 
-Graph.prototype.addNode = function(node) {
+GRAPHVIS.Graph.prototype.addNode = function(node) {
   if(this.nodeSet[node.id] === undefined && !this.reached_limit()) {
     this.nodeSet[node.id] = node;
     this.nodes.push(node);
@@ -65,20 +67,20 @@ Graph.prototype.addNode = function(node) {
   return false;
 };
 
-Graph.prototype.getNode = function(node_id) {
+GRAPHVIS.Graph.prototype.getNode = function(node_id) {
   return this.nodeSet[node_id];
 };
 
-Graph.prototype.addEdge = function(source, target) {
+GRAPHVIS.Graph.prototype.addEdge = function(source, target) {
   if(source.addConnectedTo(target) === true) {
-    var edge = new Edge(source, target);
+    var edge = new GRAPHVIS.Edge(source, target);
     this.edges.push(edge);
     return true;
   }
   return false;
 };
 
-Graph.prototype.reached_limit = function() {
+GRAPHVIS.Graph.prototype.reached_limit = function() {
   if(this.options.limit !== undefined)
     return this.options.limit <= this.nodes.length;
   else
@@ -86,15 +88,15 @@ Graph.prototype.reached_limit = function() {
 };
 
 
-function Node(node_id) {
+GRAPHVIS.Node = function(node_id) {
   this.id = node_id;
   this.nodesTo = [];
   this.nodesFrom = [];
   this.position = {};
   this.data = {};
-}
+};
 
-Node.prototype.addConnectedTo = function(node) {
+GRAPHVIS.Node.prototype.addConnectedTo = function(node) {
   if(this.connectedTo(node) === false) {
     this.nodesTo.push(node);
     return true;
@@ -102,7 +104,7 @@ Node.prototype.addConnectedTo = function(node) {
   return false;
 };
 
-Node.prototype.connectedTo = function(node) {
+GRAPHVIS.Node.prototype.connectedTo = function(node) {
   for(var i=0; i < this.nodesTo.length; i++) {
     var connectedNode = this.nodesTo[i];
     if(connectedNode.id == node.id) {
@@ -113,8 +115,8 @@ Node.prototype.connectedTo = function(node) {
 };
 
 
-function Edge(source, target) {
+GRAPHVIS.Edge = function(source, target) {
   this.source = source;
   this.target = target;
   this.data = {};
-}
+};

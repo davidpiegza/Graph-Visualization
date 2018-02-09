@@ -63,7 +63,7 @@ Drawing.SphereGraph = function(options) {
   var camera, controls, scene, renderer, interaction, geometry, object_selection;
   var stats;
   var info_text = {};
-  var graph = new Graph({limit: options.limit});
+  var graph = new GRAPHVIS.Graph({limit: options.limit});
 
   var geometries = [];
 
@@ -156,7 +156,7 @@ Drawing.SphereGraph = function(options) {
    *  numNodes and numEdges.
    */
   function createGraph() {
-    var node = new Node(0);
+    var node = new GRAPHVIS.Node(0);
     graph.addNode(node);
     drawNode(node);
 
@@ -169,7 +169,7 @@ Drawing.SphereGraph = function(options) {
 
       var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
-        var target_node = new Node(i*steps);
+        var target_node = new GRAPHVIS.Node(i*steps);
         if(graph.addNode(target_node)) {
           drawNode(target_node);
           nodes.push(target_node);
