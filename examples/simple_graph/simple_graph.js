@@ -64,7 +64,7 @@ Drawing.SimpleGraph = function(options) {
   var camera, controls, scene, renderer, interaction, geometry, object_selection;
   var stats;
   var info_text = {};
-  var graph = new Graph({limit: options.limit});
+  var graph = new GRAPHVIS.Graph({limit: options.limit});
 
   var geometries = [];
 
@@ -154,7 +154,7 @@ Drawing.SimpleGraph = function(options) {
    */
   function createGraph() {
 
-    var node = new Node(0);
+    var node = new GRAPHVIS.Node(0);
     node.data.title = "This is node " + node.id;
     graph.addNode(node);
     drawNode(node);
@@ -168,7 +168,7 @@ Drawing.SimpleGraph = function(options) {
 
       var numEdges = randomFromTo(1, that.edges_count);
       for(var i=1; i <= numEdges; i++) {
-        var target_node = new Node(i*steps);
+        var target_node = new GRAPHVIS.Node(i*steps);
         if(graph.addNode(target_node)) {
           target_node.data.title = "This is node " + target_node.id;
 

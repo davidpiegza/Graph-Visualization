@@ -26,9 +26,9 @@ This is implemented in graph-visualization/src/graph.js.
 
 Usage:
 
-    var graph = new Graph({limit: 100});  // set maximum number of nodes, optional
-    var node1 = new Node(1);              // create nodes with id
-    var node2 = new Node(2);
+    var graph = new GRAPHVIS.Graph({limit: 100});  // set maximum number of nodes, optional
+    var node1 = new GRAPHVIS.Node(1);              // create nodes with id
+    var node2 = new GRAPHVIS.Node(2);
     graph.addNode( node1 );               // add nodes
     graph.addNode( node2 );
     graph.addEdge( node1, node2 );        // create edge between nodes
