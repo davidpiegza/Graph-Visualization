@@ -24,7 +24,7 @@ The project consists of
 
 ### Graph Structure
 
-This is implemented in [graph-visualization/src/graph.js]().
+This is implemented in [src/graph.js](https://github.com/davidpiegza/Graph-Visualization/blob/master/src/graph.js).
 
 Usage:
 
