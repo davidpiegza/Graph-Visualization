@@ -81,6 +81,10 @@ See [force-based-layout.js](https://github.com/davidpiegza/Graph-Visualization/b
 
 ## Contribution
 
+It would be great to have more examples of force-directed graphs or other 3d graph layouts. To add a new example, just copy one of the existing [examples](https://github.com/davidpiegza/Graph-Visualization/blob/master/examples), add a new `Drawing` object and update the `index.html`.
+
+ ***Check out the [open issues](https://github.com/davidpiegza/Graph-Visualization/issues) for a specific task***.
+
 This project uses [Grunt](http://gruntjs.com/) to run several tasks in development. You should have `npm` and `grunt` installed. To install `grunt` run
 
     npm install -g grunt-cli
