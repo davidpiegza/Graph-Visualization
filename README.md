@@ -1,4 +1,4 @@
-### Notice: This repo is not maintained anymore but PRs are welcome.
+### Notice: This repo is not maintained anymore but PRs are still welcome.
 
 # Graph-Visualization
 
