@@ -1,3 +1,5 @@
+### Notice: This repo is not maintained anymore but PRs are welcome.
+
 # Graph-Visualization
 
 This project is about 3D graph visualization with WebGL. The aim of this project is to evaluate the possibilities of graph drawing in WebGL.
